@@ -2,31 +2,41 @@ package com.example.mendapatgo;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.mendapatgo.model.Room;
+import com.example.mendapatgo.model.User;
+import com.example.mendapatgo.remote.ApiUtils;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
+
+
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CustomerDashboardActivity extends AppCompatActivity {
 
     private TextView tvWelcome;
     private ListView lvRooms;
-    private Button btnLogout, btnMyBookings;
-    private DatabaseHelper db;
+    private Button btnLogout, btnMyBookings, btnBook;
+
     private int userId;
-    private ArrayList<Integer> roomIds;
+    private List<Room> roomList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_dashboard);
-
-        db = new DatabaseHelper(this);
-        roomIds = new ArrayList<>();
 
         SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
         String username = prefs.getString("username", "User");
@@ -39,76 +49,55 @@ public class CustomerDashboardActivity extends AppCompatActivity {
 
         tvWelcome.setText("Welcome, " + username + "!");
 
-        loadAvailableRooms();
+
 
         lvRooms.setOnItemClickListener((parent, view, position, id) -> {
-            if (position < roomIds.size()) {
-                Cursor cursor = db.getAvailableRooms();
-                cursor.moveToPosition(position);
+            Room room = roomList.get(position);
 
-                int roomId = cursor.getInt(0);
-                String roomNumber = cursor.getString(1);
-                String roomType = cursor.getString(2);
-                double price = cursor.getDouble(3);
-
-                Intent intent = new Intent(CustomerDashboardActivity.this, BookingActivity.class);
-                intent.putExtra("roomId", roomId);
-                intent.putExtra("roomNumber", roomNumber);
-                intent.putExtra("roomType", roomType);
-                intent.putExtra("price", price);
-                intent.putExtra("userId", userId);
-                startActivity(intent);
-
-                cursor.close();
-            }
-        });
-
-        btnMyBookings.setOnClickListener(v -> {
-            Intent intent = new Intent(CustomerDashboardActivity.this, MyBookingsActivity.class);
+            Intent intent = new Intent(this, BookingActivity.class);
+            intent.putExtra("roomId", room.getId());
+            intent.putExtra("roomNumber", room.getRoom_number());
+            intent.putExtra("roomType", room.getRoom_type());
+            intent.putExtra("price", room.getPrice());
             intent.putExtra("userId", userId);
             startActivity(intent);
         });
 
+        btnMyBookings.setOnClickListener(v ->
+                startActivity(new Intent(this, MyBookingsActivity.class))
+        );
+
         btnLogout.setOnClickListener(v -> logout());
+
+        // greet the user
+        // if the user is not logged in we will directly them to LoginActivity
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        if (!spm.isLoggedIn()) {    // no session record
+            // stop this MainActivity
+            finish();
+            // forward to Login Page
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        }
+        else {
+            // Greet user
+            User user = spm.getUser();
+            tvWelcome.setText("Hello " + user.getUsername());
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadAvailableRooms();
+
     }
 
-    private void loadAvailableRooms() {
-        Cursor cursor = db.getAvailableRooms();
-        ArrayList<String> roomList = new ArrayList<>();
-        roomIds.clear();
-
-        if (cursor.moveToFirst()) {
-            do {
-                roomIds.add(cursor.getInt(0));
-                String roomInfo = "Room " + cursor.getString(1) + " - " +
-                        cursor.getString(2) + " - Rp " + cursor.getDouble(3);
-                roomList.add(roomInfo);
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-
-        if (roomList.isEmpty()) {
-            roomList.add("No available rooms");
-        }
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, roomList);
-        lvRooms.setAdapter(adapter);
-    }
 
     private void logout() {
         SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
         prefs.edit().clear().apply();
 
-        Intent intent = new Intent(CustomerDashboardActivity.this, MainActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(this, MainActivity.class));
         finish();
     }
 }

@@ -47,6 +47,15 @@
         android:padding="8dp">
 
         <Button
+            android:id="@+id/btnBook"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Book"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
             android:id="@+id/btnMyBookings"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

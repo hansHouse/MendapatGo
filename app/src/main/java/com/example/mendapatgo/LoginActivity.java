@@ -1,72 +1,144 @@
 package com.example.mendapatgo;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.widget.Button;
+import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.example.mendapatgo.model.FailLogin;
+import com.example.mendapatgo.model.User;
+import com.example.mendapatgo.remote.ApiUtils;
+import com.example.mendapatgo.remote.UserService;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
+import com.google.gson.Gson;
+
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText etEmail, etPassword;
-    private Button btnLogin;
-    private DatabaseHelper db;
+    private EditText edtUsername;
+    private EditText edtPassword;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.login), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
-        db = new DatabaseHelper(this);
+        edtUsername = findViewById(R.id.edtUsername); // input field for username or email
+        edtPassword = findViewById(R.id.edtPassword);
 
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        btnLogin = findViewById(R.id.btnLogin);
 
-        btnLogin.setOnClickListener(v -> loginUser());
     }
 
-    private void loginUser() {
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
+    /**
+     * Login button click
+     */
+    public void loginClicked(View view) {
+        Log.d("CLICK_TEST", "Button was clicked!");
+        String username = edtUsername.getText().toString().trim();
+        String password = edtPassword.getText().toString().trim();
 
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-            return;
+        if (validateLogin(username, password)) {
+            doLogin(username, password);
         }
+    }
 
-        Cursor cursor = db.loginUser(email, password);
+    /**
+     * Call REST API to login
+     *
+     * @param username username
+     * @param password password
+     */
+    private void doLogin(String username, String password) {
+        Log.d("DEBUG_SEND", "Sending Key: username, Value: " + username);
+        Log.d("DEBUG_SEND", "Sending Key: password, Value: " + password);
 
-        if (cursor.moveToFirst()) {
-            int userId = cursor.getInt(0);
-            String username = cursor.getString(1);
-            String role = cursor.getString(5);
+        UserService userService = ApiUtils.getUserService();
 
-            // Save user session
-            SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt("userId", userId);
-            editor.putString("username", username);
-            editor.putString("role", role);
-            editor.apply();
+        Call<User> call = userService.login(username, password);
 
-            Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
 
-            // Redirect based on role
-            Intent intent;
-            if (role.equals("admin")) {
-                intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
-            } else {
-                intent = new Intent(LoginActivity.this, CustomerDashboardActivity.class);
+                if (response.isSuccessful() && response.body() != null) {
+
+                    User user = response.body();
+
+                    // Save session
+                    SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+                    spm.storeUser(user);
+
+                    Toast.makeText(LoginActivity.this,
+                            "Login successful", Toast.LENGTH_SHORT).show();
+
+                    // Go to dashboard
+                    Intent intent = new Intent(LoginActivity.this,
+                            CustomerDashboardActivity.class);
+                    startActivity(intent);
+                    finish();
+
+                } else {
+                    String errorResp = null;
+                    try {
+                        errorResp = response.errorBody().string();
+                        FailLogin e = new Gson().fromJson(errorResp, FailLogin.class);
+                        displayToast(e.getError().getMessage());
+                    } catch (Exception e) {
+                        Log.e("MyApp:", e.toString()); // print error details to error log
+                        displayToast("Error");
+                    }
+                }
             }
-            startActivity(intent);
-            finish();
-        } else {
-            Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Toast.makeText(LoginActivity.this,
+                        "Server error: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /**
+     * Client-side validation
+     */
+    private boolean validateLogin(String username, String password) {
+        if (username == null || username.trim().isEmpty()) {
+            displayToast("Username or Email is required");
+            return false;
         }
-        cursor.close();
+        if (password == null || password.trim().isEmpty()) {
+            displayToast("Password is required");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Display a Toast
+     */
+    private void displayToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
