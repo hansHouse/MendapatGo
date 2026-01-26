@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -8,8 +9,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="#2196F3"
+        android:orientation="vertical"
         android:padding="16dp">
 
         <TextView
@@ -17,28 +18,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Welcome, User!"
+            android:textColor="#FFF"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#FFF"/>
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="Available Rooms"
-            android:textSize="14sp"
             android:textColor="#FFF"
-            android:layout_marginTop="4dp"/>
-
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/lvRooms"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvRooms"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
-        android:divider="#CCC"
-        android:dividerHeight="1dp"/>
+        android:padding="8dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,28 +48,26 @@
             android:id="@+id/btnBook"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:text="Book"
             android:backgroundTint="#4CAF50"
-            android:layout_marginEnd="8dp"/>
+            android:text="Book" />
 
         <Button
             android:id="@+id/btnMyBookings"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:text="My Bookings"
             android:backgroundTint="#4CAF50"
-            android:layout_marginEnd="8dp"/>
+            android:text="My Bookings" />
 
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Logout"
-            android:backgroundTint="#F44336"/>
-
+            android:backgroundTint="#F44336"
+            android:text="Logout" />
     </LinearLayout>
-
 </LinearLayout>
