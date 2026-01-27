@@ -1,5 +1,7 @@
 package com.example.mendapatgo.sharedpref;
 
+import static okhttp3.internal.Internal.instance;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +10,8 @@ import com.example.mendapatgo.LoginActivity;
 import com.example.mendapatgo.RoomListActivity;
 import com.example.mendapatgo.model.User;
 
+import okhttp3.internal.Internal;
+
 public class SharedPrefManager {
 
     //the constants
@@ -15,6 +19,7 @@ public class SharedPrefManager {
     private static final String KEY_ID = "keyid";
     private static final String KEY_USERNAME = "keyusername";
     private static final String KEY_EMAIL = "keyemail";
+    private static final String KEY_TOKEN = "keytoken";
     private static final String KEY_ROLE = "keyrole";
 
     private final Context mCtx;
@@ -23,10 +28,9 @@ public class SharedPrefManager {
         mCtx = context;
     }
 
-    public static SharedPrefManager getInstance(RoomListActivity roomListActivity) {
-    }
+    // Fix: Use 'Context' instead of a specific Activity like 'RoomListActivity'
 
-   
+
 
     /**
      * method to let the user login
@@ -39,6 +43,7 @@ public class SharedPrefManager {
         editor.putInt(KEY_ID, user.getId());
         editor.putString(KEY_USERNAME, user.getUsername());
         editor.putString(KEY_EMAIL, user.getEmail());
+        editor.putString(KEY_TOKEN, user.getToken());
         editor.putString(KEY_ROLE, user.getRole());
         editor.apply();
     }
@@ -63,6 +68,7 @@ public class SharedPrefManager {
         user.setId(sharedPreferences.getInt(KEY_ID, -1));
         user.setUsername(sharedPreferences.getString(KEY_USERNAME, null));
         user.setEmail(sharedPreferences.getString(KEY_EMAIL, null));
+        user.setToken(sharedPreferences.getString(KEY_TOKEN, null));
         user.setRole(sharedPreferences.getString(KEY_ROLE, null));
 
         return user;

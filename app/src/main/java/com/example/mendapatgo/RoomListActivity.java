@@ -1,13 +1,19 @@
 package com.example.mendapatgo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.mendapatgo.adapter.RoomAdapter;
 import com.example.mendapatgo.model.Room;
+import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.RoomService;
 import com.example.mendapatgo.sharedpref.SharedPrefManager;
@@ -26,39 +32,62 @@ public class RoomListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room_list);
-
-        // Set Toolbar Title
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Select a Room");
-        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         rvRooms = findViewById(R.id.rvRooms);
-        rvRooms.setLayoutManager(new LinearLayoutManager(this));
+        registerForContextMenu(rvRooms);
 
-        fetchRoomsFromDb();
+        updateRecyclerView();
     }
 
-    private void fetchRoomsFromDb() {
-        String token = SharedPrefManager.getInstance(this).getUser().getToken();
+    private void updateRecyclerView() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        String token = user.getToken();
         roomService = ApiUtils.getRoomService();
-
-        // Standardizing the Bearer token for your 401 error fix
-        roomService.getAllRooms("Bearer " + token).enqueue(new Callback<List<Room>>() {
+        roomService.getAllRooms(token).enqueue(new Callback<List<Room>>() {
             @Override
             public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    adapter = new RoomAdapter(RoomListActivity.this, response.body());
+                // Log the raw response for debugging
+                Log.d("MyApp:", "Response: " + response.raw().toString());
+
+                if (response.code() == 200) {
+                    List<Room> rooms = response.body();
+                    adapter = new RoomAdapter(getApplicationContext(), rooms);
                     rvRooms.setAdapter(adapter);
-                } else {
-                    Toast.makeText(RoomListActivity.this, "Failed to load rooms", Toast.LENGTH_SHORT).show();
+                    rvRooms.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                    DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvRooms.getContext(),
+                            DividerItemDecoration.VERTICAL);
+                    rvRooms.addItemDecoration(dividerItemDecoration);
+                }
+                else if (response.code() == 401) {
+                    // Only redirect if it's truly an authentication error
+                    Toast.makeText(getApplicationContext(), "Session Expired. Please login again", Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Error: " + response.code(), Toast.LENGTH_LONG).show();
+                    Log.e("MyApp: ", "Server Error: " + response.errorBody());
                 }
             }
 
             @Override
             public void onFailure(Call<List<Room>> call, Throwable t) {
-                Log.e("API_ERROR", t.getMessage());
-                Toast.makeText(RoomListActivity.this, "Network Error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Network Error: Check your connection", Toast.LENGTH_LONG).show();
+                Log.e("MyApp:", t.toString());
             }
         });
+    }
+
+    private void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 }

@@ -69,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<User> call, Response<User> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     User user = response.body();
+                    Log.d("LOGIN_CHECK", "Token received: " + user.getToken());
 
                     // 1. Save session to Shared Preferences
                     SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
