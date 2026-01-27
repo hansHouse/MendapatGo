@@ -29,6 +29,7 @@
         <activity android:name=".MyBookingsActivity" />
         <activity android:name=".ManageRoomsActivity" />
         <activity android:name=".ManageBookingsActivity" />
+        <activity android:name=".RoomListActivity" />
 
     </application>
 

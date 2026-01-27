@@ -1,73 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:background="#F5F5F5"
+    android:padding="24dp"
+    android:id="@+id/main"
+    android:gravity="center">
 
-    <LinearLayout
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Customer Dashboard"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#2196F3"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome, User!"
+        android:textSize="18sp"
+        android:textColor="#666"
+        android:layout_marginBottom="48dp"/>
+
+    <Button
+        android:id="@+id/btnViewRooms"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#2196F3"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:text="View Available Rooms"
+        android:textSize="16sp"
+        android:backgroundTint="#2196F3"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"/>
 
-        <TextView
-            android:id="@+id/tvWelcome"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Welcome, User!"
-            android:textColor="#FFF"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Available Rooms"
-            android:textColor="#FFF"
-            android:textSize="14sp" />
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvRooms"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp" />
-
-    <LinearLayout
+    <Button
+        android:id="@+id/btnMyBookings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:text="My Bookings"
+        android:textSize="16sp"
+        android:backgroundTint="#4CAF50"
+        android:padding="16dp"
+        android:layout_marginBottom="32dp"/>
 
-        <Button
-            android:id="@+id/btnBook"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:backgroundTint="#4CAF50"
-            android:text="Book" />
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:textSize="16sp"
+        android:backgroundTint="#F44336"
+        android:padding="16dp"/>
 
-        <Button
-            android:id="@+id/btnMyBookings"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:backgroundTint="#4CAF50"
-            android:text="My Bookings" />
-
-        <Button
-            android:id="@+id/btnLogout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="#F44336"
-            android:text="Logout" />
-    </LinearLayout>
 </LinearLayout>

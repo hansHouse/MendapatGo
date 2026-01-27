@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import com.example.mendapatgo.LoginActivity;
+import com.example.mendapatgo.RoomListActivity;
 import com.example.mendapatgo.model.User;
 
 public class SharedPrefManager {
@@ -21,6 +22,11 @@ public class SharedPrefManager {
     public SharedPrefManager(Context context) {
         mCtx = context;
     }
+
+    public static SharedPrefManager getInstance(RoomListActivity roomListActivity) {
+    }
+
+   
 
     /**
      * method to let the user login
@@ -61,6 +67,7 @@ public class SharedPrefManager {
 
         return user;
     }
+
 
     /**
      * this method will logout the user. clear the SharedPreferences

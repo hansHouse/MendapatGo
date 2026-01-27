@@ -15,10 +15,17 @@ public class Room {
     public String getRoom_type() { return room_type; }
     public double getPrice() { return price; }
 
+    public void setRoom_id(int room_id) {
+        this.room_id = room_id;
+    }
+
+    public void setRoom_number(String room_number) {
+        this.room_number = room_number;
+    }
+
     @Override
     public String toString() {
         return "Room " + room_number + " (" + room_type + ") - RM" + price;
     }
-
 
 }
