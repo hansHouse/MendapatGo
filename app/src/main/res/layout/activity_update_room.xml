@@ -80,21 +80,6 @@
             android:padding="12dp"
             android:entries="@array/room_status_array"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Updated By:"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp"/>
-
-        <EditText
-            android:id="@+id/txtUpdatedBy"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Admin username"
-            android:inputType="text"
-            android:padding="12dp"/>
-
         <Button
             android:id="@+id/btnUpdateRoom"
             android:layout_width="match_parent"

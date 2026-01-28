@@ -46,12 +46,14 @@ public interface BookingService {
     );
 
     // Update booking status
+    // Alternative if your API requires PUT
+    @FormUrlEncoded
     @PUT("bookings/{bookingId}/status")
     Call<Booking> updateBookingStatus(
             @Header("api-key") String apiKey,
             @Path("bookingId") int bookingId,
-            @Query("booking_status") String bookingStatus,
-            @Query("payment_status") String paymentStatus
+            @Field("booking_status") String bookingStatus,
+            @Field("payment_status") String paymentStatus
     );
 
     // Create booking with payment

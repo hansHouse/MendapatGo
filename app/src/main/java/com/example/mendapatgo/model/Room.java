@@ -22,12 +22,6 @@ public class Room {
     @SerializedName("updated_by")
     private String updatedBy;
 
-    @SerializedName("updated_at")
-    private String updatedAt;
-
-    @SerializedName("created_at")
-    private String createdAt;
-
     // Constructor
     public Room(int roomId, String roomNumber, String roomType, double price, String status) {
         this.roomId = roomId;
@@ -42,7 +36,6 @@ public class Room {
         return roomId;
     }
 
-    // Alternative getter for compatibility with RoomAdapter
     public int getRoom_id() {
         return roomId;
     }
@@ -55,7 +48,6 @@ public class Room {
         return roomNumber;
     }
 
-    // Alternative getter for compatibility with RoomAdapter
     public String getRoom_number() {
         return roomNumber;
     }
@@ -68,7 +60,6 @@ public class Room {
         return roomType;
     }
 
-    // Alternative getter for compatibility with RoomAdapter
     public String getRoom_type() {
         return roomType;
     }
@@ -99,22 +90,6 @@ public class Room {
 
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
     }
 
     @Override

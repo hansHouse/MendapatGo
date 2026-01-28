@@ -12,7 +12,6 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
-import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface RoomService {
@@ -45,17 +44,18 @@ public interface RoomService {
 
     /**
      * Update an existing room
+     * CRITICAL: Uses POST with id in path, not PUT
+     * This API expects form data, not JSON
      */
     @FormUrlEncoded
-    @PUT("rooms/{id}")
+    @POST("rooms/{id}")
     Call<Room> updateRoom(
             @Header("api-key") String apiKey,
-            @Path("id") int roomId,
-            @Field("room_number") String roomNumber,
-            @Field("room_type") String roomType,
+            @Path("id") int id,
+            @Field("room_number") String room_number,
+            @Field("room_type") String room_type,
             @Field("price") double price,
-            @Field("status") String status,
-            @Field("updated_by") String updatedBy
+            @Field("status") String status
     );
 
     /**

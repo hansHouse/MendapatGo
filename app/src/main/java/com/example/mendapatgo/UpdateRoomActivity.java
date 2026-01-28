@@ -1,9 +1,11 @@
 package com.example.mendapatgo;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -18,8 +20,6 @@ import com.example.mendapatgo.model.Room;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.RoomService;
 
-import java.io.IOException;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -32,8 +32,8 @@ public class UpdateRoomActivity extends AppCompatActivity {
     private EditText txtRoomType;
     private EditText txtPrice;
     private Spinner spinnerStatus;
-    private EditText txtUpdatedBy;
 
+    private Room room; // current room to be updated
     private int roomId;
 
     // API key for accessing the room service
@@ -56,30 +56,30 @@ public class UpdateRoomActivity extends AppCompatActivity {
         txtRoomType = findViewById(R.id.txtRoomType);
         txtPrice = findViewById(R.id.txtPrice);
         spinnerStatus = findViewById(R.id.spinnerStatus);
-        txtUpdatedBy = findViewById(R.id.txtUpdatedBy);
 
-        // get room id from intent
-        roomId = getIntent().getIntExtra("room_id", 0);
+        // retrieve room id from intent
+        Intent intent = getIntent();
+        roomId = intent.getIntExtra("room_id", -1);
 
         Log.d(TAG, "Opening UpdateRoomActivity for room ID: " + roomId);
 
-        // fetch room details and populate form
-        fetchRoomDetails();
-    }
-
-    private void fetchRoomDetails() {
+        // retrieve room info from database using the room id
         RoomService roomService = ApiUtils.getRoomService();
-        Call<Room> call = roomService.getRoom(API_KEY, roomId);
 
-        call.enqueue(new Callback<Room>() {
+        // execute the API query
+        roomService.getRoom(API_KEY, roomId).enqueue(new Callback<Room>() {
             @Override
             public void onResponse(Call<Room> call, Response<Room> response) {
+                Log.d(TAG, "Response code: " + response.code());
+
                 if (response.code() == 200) {
-                    Room room = response.body();
+                    // server return success
+                    // get room object from response
+                    room = response.body();
 
-                    Log.d(TAG, "Room details loaded: " + room.toString());
+                    Log.d(TAG, "Room retrieved: " + room.toString());
 
-                    // populate form with room data
+                    // set values into forms
                     txtRoomNumber.setText(room.getRoomNumber());
                     txtRoomType.setText(room.getRoomType());
                     txtPrice.setText(String.valueOf(room.getPrice()));
@@ -88,46 +88,42 @@ public class UpdateRoomActivity extends AppCompatActivity {
                     String status = room.getStatus();
                     String[] statusArray = getResources().getStringArray(R.array.room_status_array);
                     for (int i = 0; i < statusArray.length; i++) {
-                        if (statusArray[i].equals(status)) {
+                        if (statusArray[i].equalsIgnoreCase(status)) {
                             spinnerStatus.setSelection(i);
                             break;
                         }
                     }
-                } else {
-                    Log.e(TAG, "Error loading room: " + response.code() + " - " + response.message());
-                    Toast.makeText(getApplicationContext(), "Error loading room details", Toast.LENGTH_SHORT).show();
+                }
+                else if (response.code() == 401) {
+                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
+                    finish();
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, response.toString());
                     finish();
                 }
             }
 
             @Override
             public void onFailure(Call<Room> call, Throwable t) {
-                Log.e(TAG, "Failed to load room details: " + t.getMessage());
-                Toast.makeText(getApplicationContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error connecting", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Error: " + t.getMessage());
                 finish();
             }
         });
     }
 
     /**
-     * Called when Update Room button is clicked
-     * @param v
+     * Update room info in database when the user clicks Update Room button
+     * @param view
      */
-    public void updateRoom(View v) {
+    public void updateRoom(View view) {
         // get values in form
         String roomNumber = txtRoomNumber.getText().toString().trim();
         String roomType = txtRoomType.getText().toString().trim();
         String priceStr = txtPrice.getText().toString().trim();
         String status = spinnerStatus.getSelectedItem().toString();
-        String updatedBy = txtUpdatedBy.getText().toString().trim();
-
-        Log.d(TAG, "=== Attempting to Update Room ===");
-        Log.d(TAG, "Room ID: " + roomId);
-        Log.d(TAG, "Room Number: " + roomNumber);
-        Log.d(TAG, "Room Type: " + roomType);
-        Log.d(TAG, "Price String: " + priceStr);
-        Log.d(TAG, "Status: " + status);
-        Log.d(TAG, "Updated By: " + updatedBy);
 
         // Validate inputs
         if (roomNumber.isEmpty()) {
@@ -142,87 +138,113 @@ public class UpdateRoomActivity extends AppCompatActivity {
             Toast.makeText(this, "Please enter price", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (updatedBy.isEmpty()) {
-            Toast.makeText(this, "Please enter admin username (who is updating)", Toast.LENGTH_SHORT).show();
-            txtUpdatedBy.requestFocus();
-            return;
-        }
 
         double price;
         try {
             price = Double.parseDouble(priceStr);
-            Log.d(TAG, "Parsed Price: " + price);
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Invalid price format", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // send request to update room to the REST API
-        RoomService roomService = ApiUtils.getRoomService();
-        Call<Room> call = roomService.updateRoom(API_KEY, roomId, roomNumber, roomType, price, status, updatedBy);
+        // update the room object with new data
+        room.setRoomNumber(roomNumber);
+        room.setRoomType(roomType);
+        room.setPrice(price);
+        room.setStatus(status);
 
-        Log.d(TAG, "Sending update request to API...");
+        Log.d(TAG, "Updating room: " + room.toString());
+        Log.d(TAG, "Sending: ID=" + room.getRoomId() + ", Number=" + roomNumber +
+                ", Type=" + roomType + ", Price=" + price + ", Status=" + status);
+
+        // send request to update the room record to the REST API
+        RoomService roomService = ApiUtils.getRoomService();
+
+        // CRITICAL: Send price as double, not string!
+        Call<Room> call = roomService.updateRoom(
+                API_KEY,
+                room.getRoomId(),
+                roomNumber,
+                roomType,
+                price,      // double, not String!
+                status
+        );
 
         // execute
         call.enqueue(new Callback<Room>() {
             @Override
             public void onResponse(Call<Room> call, Response<Room> response) {
-                Log.d(TAG, "=== Update Response Received ===");
-                Log.d(TAG, "Response Code: " + response.code());
-                Log.d(TAG, "Response Message: " + response.message());
-                Log.d(TAG, "Response: " + response.raw().toString());
+                Log.d(TAG, "Update Response: " + response.code());
 
                 if (response.code() == 200) {
-                    // room updated successfully
-                    Log.d(TAG, "✅ Room updated successfully");
-                    Toast.makeText(getApplicationContext(),
-                            "Room updated successfully.",
-                            Toast.LENGTH_LONG).show();
-
-                    // end this activity and go back
-                    finish();
-
-                } else if (response.code() == 400) {
-                    Log.e(TAG, "❌ ERROR 400: Bad Request");
-
-                    // Try to get error details
+                    // server return success code for update request
+                    Room updatedRoom = response.body();
+                    if (updatedRoom != null) {
+                        displayUpdateSuccess("Room " + updatedRoom.getRoomNumber() + " updated successfully.");
+                    } else {
+                        displayUpdateSuccess("Room updated successfully.");
+                    }
+                }
+                else if (response.code() == 401) {
+                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
+                }
+                else {
                     try {
-                        if (response.errorBody() != null) {
-                            String errorBody = response.errorBody().string();
-                            Log.e(TAG, "Error Body: " + errorBody);
-                            Toast.makeText(getApplicationContext(),
-                                    "Bad Request: " + errorBody,
-                                    Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    "Bad Request: Check all fields are filled correctly",
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    } catch (IOException e) {
-                        Log.e(TAG, "Error reading error body: " + e.getMessage());
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Log.e(TAG, "Error " + response.code() + ": " + errorBody);
                         Toast.makeText(getApplicationContext(),
-                                "Bad Request - Please check all fields",
+                                "Error " + response.code() + ": " + response.message(),
+                                Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Could not read error body: " + e.getMessage());
+                        Toast.makeText(getApplicationContext(),
+                                "Error: " + response.message(),
                                 Toast.LENGTH_LONG).show();
                     }
-
-                } else {
-                    Log.e(TAG, "❌ ERROR: " + response.code() + " - " + response.message());
-                    Toast.makeText(getApplicationContext(),
-                            "Error: " + response.message(),
-                            Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Room> call, Throwable t) {
-                Log.e(TAG, "=== Update Request Failed ===");
+                displayAlert("Error: " + t.getMessage());
                 Log.e(TAG, "Error: " + t.getMessage());
-                t.printStackTrace();
-
-                Toast.makeText(getApplicationContext(),
-                        "Connection error: " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    /**
+     * Displaying an alert dialog with a single button
+     * @param message - message to be displayed
+     */
+    public void displayUpdateSuccess(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // end this activity and go back to previous activity
+                        finish();
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * Displaying an alert dialog with a single button
+     * @param message - message to be displayed
+     */
+    public void displayAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

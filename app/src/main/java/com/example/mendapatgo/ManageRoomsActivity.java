@@ -80,8 +80,6 @@ public class ManageRoomsActivity extends AppCompatActivity {
             public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
                 Log.d("MyApp:", "=== Response Received ===");
                 Log.d("MyApp:", "Response Code: " + response.code());
-                Log.d("MyApp:", "Response Message: " + response.message());
-                Log.d("MyApp:", "Response Headers: " + response.headers().toString());
 
                 if (response.code() == 200) {
                     // Get list of room objects from response
@@ -105,47 +103,19 @@ public class ManageRoomsActivity extends AppCompatActivity {
                     rvRoomList.addItemDecoration(dividerItemDecoration);
 
                 } else if (response.code() == 401) {
-                    // Unauthorized error
                     Log.e("MyApp:", "❌ ERROR 401: Unauthorized");
-                    Log.e("MyApp:", "This means the API key is invalid, expired, or not properly sent");
-
-                    try {
-                        if (response.errorBody() != null) {
-                            String errorBody = response.errorBody().string();
-                            Log.e("MyApp:", "Error Body: " + errorBody);
-                            Toast.makeText(getApplicationContext(),
-                                    "Unauthorized: " + errorBody,
-                                    Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    "Unauthorized: Invalid or missing API key",
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    } catch (Exception e) {
-                        Log.e("MyApp:", "Error reading error body: " + e.getMessage());
-                        Toast.makeText(getApplicationContext(),
-                                "Unauthorized: Check API key configuration",
-                                Toast.LENGTH_LONG).show();
-                    }
-
+                    Toast.makeText(getApplicationContext(),
+                            "Unauthorized: Invalid or missing API key",
+                            Toast.LENGTH_LONG).show();
                 } else {
                     Log.e("MyApp:", "❌ ERROR: " + response.code() + " - " + response.message());
-
-                    // Try to get more error details
                     try {
-                        if (response.errorBody() != null) {
-                            String errorBody = response.errorBody().string();
-                            Log.e("MyApp:", "Error Body: " + errorBody);
-                            Toast.makeText(getApplicationContext(),
-                                    "Error " + response.code() + ": " + errorBody,
-                                    Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    "Error: " + response.message(),
-                                    Toast.LENGTH_LONG).show();
-                        }
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+                        Log.e("MyApp:", "Error Body: " + errorBody);
+                        Toast.makeText(getApplicationContext(),
+                                "Error " + response.code() + ": " + response.message(),
+                                Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
-                        Log.e("MyApp:", "Error reading error body: " + e.getMessage());
                         Toast.makeText(getApplicationContext(),
                                 "Error: " + response.message(),
                                 Toast.LENGTH_LONG).show();
@@ -156,10 +126,7 @@ public class ManageRoomsActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<Room>> call, Throwable t) {
                 Log.e("MyApp:", "=== API CALL FAILED ===");
-                Log.e("MyApp:", "Error Type: " + t.getClass().getName());
-                Log.e("MyApp:", "Error Message: " + t.getMessage());
-                t.printStackTrace();
-
+                Log.e("MyApp:", "Error: " + t.getMessage());
                 Toast.makeText(getApplicationContext(),
                         "Error connecting to server: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
@@ -172,6 +139,10 @@ public class ManageRoomsActivity extends AppCompatActivity {
      * @param selectedRoom - room selected by admin
      */
     private void doDeleteRoom(Room selectedRoom) {
+        Log.d("MyApp:", "=== DELETING ROOM ===");
+        Log.d("MyApp:", "Room ID: " + selectedRoom.getRoomId());
+        Log.d("MyApp:", "Room Number: " + selectedRoom.getRoomNumber());
+
         // prepare REST API call
         RoomService roomService = ApiUtils.getRoomService();
         Call<DeleteResponse> call = roomService.deleteRoom(API_KEY, selectedRoom.getRoomId());
@@ -180,8 +151,11 @@ public class ManageRoomsActivity extends AppCompatActivity {
         call.enqueue(new Callback<DeleteResponse>() {
             @Override
             public void onResponse(Call<DeleteResponse> call, Response<DeleteResponse> response) {
+                Log.d("MyApp:", "Delete Response Code: " + response.code());
+
                 if (response.code() == 200) {
                     // 200 means OK
+                    Log.d("MyApp:", "✅ Room deleted successfully");
                     displayAlert("Room successfully deleted");
                     // update data in list view
                     updateRecyclerView();
@@ -189,15 +163,21 @@ public class ManageRoomsActivity extends AppCompatActivity {
                     Log.e("MyApp:", "❌ ERROR 401: Unauthorized on delete");
                     displayAlert("Unauthorized: Cannot delete room. Check API key.");
                 } else {
-                    Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
-                    Log.e("MyApp: ", response.toString());
+                    Log.e("MyApp:", "❌ Delete failed: " + response.code() + " - " + response.message());
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+                        Log.e("MyApp:", "Error Body: " + errorBody);
+                        displayAlert("Error: " + response.message() + "\n" + errorBody);
+                    } catch (Exception e) {
+                        displayAlert("Error: " + response.message());
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<DeleteResponse> call, Throwable t) {
-                displayAlert("Error [" + t.getMessage() + "]");
-                Log.e("MyApp:", t.getMessage());
+                Log.e("MyApp:", "❌ Delete API call failed: " + t.getMessage());
+                displayAlert("Error: " + t.getMessage());
             }
         });
     }
@@ -228,11 +208,27 @@ public class ManageRoomsActivity extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         Room selectedRoom = adapter.getSelectedItem();
-        Log.d("MyApp", "selected " + selectedRoom.toString());
+
+        if (selectedRoom == null) {
+            Toast.makeText(this, "No room selected", Toast.LENGTH_SHORT).show();
+            return super.onContextItemSelected(item);
+        }
+
+        Log.d("MyApp:", "Context menu item selected for room: " + selectedRoom.toString());
 
         if (item.getItemId() == R.id.menu_delete) {
-            // user clicked the delete contextual menu
-            doDeleteRoom(selectedRoom);
+            // Show confirmation dialog before deleting
+            new AlertDialog.Builder(this)
+                    .setTitle("Confirm Delete")
+                    .setMessage("Are you sure you want to delete room " + selectedRoom.getRoomNumber() + "?")
+                    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            doDeleteRoom(selectedRoom);
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
         } else if (item.getItemId() == R.id.menu_update) {
             // user clicked the update contextual menu
             doUpdateRoom(selectedRoom);
@@ -241,7 +237,7 @@ public class ManageRoomsActivity extends AppCompatActivity {
     }
 
     private void doUpdateRoom(Room selectedRoom) {
-        Log.d("MyApp:", "updating room: " + selectedRoom.toString());
+        Log.d("MyApp:", "Updating room: " + selectedRoom.toString());
         // forward admin to UpdateRoomActivity, passing the selected room id
         Intent intent = new Intent(getApplicationContext(), UpdateRoomActivity.class);
         intent.putExtra("room_id", selectedRoom.getRoomId());
