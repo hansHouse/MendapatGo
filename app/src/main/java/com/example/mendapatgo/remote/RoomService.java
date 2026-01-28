@@ -9,7 +9,9 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 
 public interface RoomService {
-    @GET("room?order=name&orderType=asc")
-    Call<List<Room>> getAllRooms(@Header("api-key") String api_key);
-}
 
+    // OPTION 2: Try "rooms" (plural)
+    @GET("rooms")
+    Call<List<Room>> getAllRooms(@Header("api-key") String apiKey);
+
+}

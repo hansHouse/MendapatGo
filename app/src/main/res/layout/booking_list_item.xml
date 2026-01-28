@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header with Booking ID and Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvBookingId"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Booking #12345"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#2196F3"/>
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Confirmed"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:textColor="#4CAF50"/>
+
+        </LinearLayout>
+
+        <!-- Room Info -->
+        <TextView
+            android:id="@+id/tvRoomInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Room A-101 - Deluxe Suite"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Check-in Date -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📅 "
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/tvCheckInDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Check-in: 2025-01-01"
+                android:textSize="14sp"
+                android:textColor="#666"/>
+
+        </LinearLayout>
+
+        <!-- Check-out Date -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📅 "
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/tvCheckOutDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Check-out: 2025-01-03"
+                android:textSize="14sp"
+                android:textColor="#666"/>
+
+        </LinearLayout>
+
+        <!-- Price -->
+        <TextView
+            android:id="@+id/tvTotalPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RM 300.00"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#4CAF50"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

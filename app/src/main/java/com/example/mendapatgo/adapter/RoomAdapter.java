@@ -28,27 +28,68 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Corrected to use your custom layout
-        View view = LayoutInflater.from(mContext).inflate(R.layout.activity_customer_dashboard, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.room_list_item, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Room room = roomListData.get(position);
-        holder.tvRoomType.setText(room.getRoom_type());
-        holder.tvRoomPrice.setText("RM " + room.getPrice() + " per night");
 
-        // Click Listener to go to Booking Page
+        // Display room information
+        holder.tvRoomNumber.setText("Room: " + room.getRoom_number());
+        holder.tvRoomType.setText("Type: " + room.getRoom_type());
+        holder.tvRoomPrice.setText(String.format("RM %.2f per night", room.getPrice()));
+
+        // Display status if available
+        if (room.getStatus() != null && !room.getStatus().isEmpty()) {
+            holder.tvRoomStatus.setText("Status: " + room.getStatus());
+            holder.tvRoomStatus.setVisibility(View.VISIBLE);
+
+            // Set status color based on availability
+            switch (room.getStatus().toLowerCase()) {
+                case "available":
+                    holder.tvRoomStatus.setTextColor(
+                            mContext.getResources().getColor(android.R.color.holo_green_dark));
+                    break;
+                case "occupied":
+                    holder.tvRoomStatus.setTextColor(
+                            mContext.getResources().getColor(android.R.color.holo_red_dark));
+                    break;
+                case "maintenance":
+                    holder.tvRoomStatus.setTextColor(
+                            mContext.getResources().getColor(android.R.color.holo_orange_dark));
+                    break;
+                default:
+                    holder.tvRoomStatus.setTextColor(
+                            mContext.getResources().getColor(android.R.color.darker_gray));
+            }
+        } else {
+            holder.tvRoomStatus.setVisibility(View.GONE);
+        }
+
+        // ✅ Click Listener to open BookingActivity
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(mContext, BookingActivity.class);
+            // Only allow booking if room is available
+            if (room.getStatus() != null && room.getStatus().equalsIgnoreCase("available")) {
+                Intent intent = new Intent(mContext, BookingActivity.class);
 
-            // Passing data to the next activity
-            intent.putExtra("ROOM_ID", room.getRoom_id());
-            intent.putExtra("ROOM_TYPE", room.getRoom_type());
-            intent.putExtra("ROOM_PRICE", String.valueOf(room.getPrice()));
+                // Pass room details to booking activity
+                intent.putExtra("ROOM_ID", room.getRoom_id());
+                intent.putExtra("ROOM_NUMBER", room.getRoom_number());
+                intent.putExtra("ROOM_TYPE", room.getRoom_type());
+                intent.putExtra("ROOM_PRICE", room.getPrice());
 
-            mContext.startActivity(intent);
+                // Add FLAG_ACTIVITY_NEW_TASK since we're starting from adapter context
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                mContext.startActivity(intent);
+            } else {
+                // Show message if room is not available
+                android.widget.Toast.makeText(mContext,
+                        "This room is not available for booking",
+                        android.widget.Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -57,16 +98,18 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.ViewHolder> {
         return roomListData != null ? roomListData.size() : 0;
     }
 
-    // Single, clean ViewHolder class
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
+        public TextView tvRoomNumber;
         public TextView tvRoomType;
         public TextView tvRoomPrice;
+        public TextView tvRoomStatus;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            // Replace R.id.xxxx with the actual IDs inside activity_customer_dashboard.xml
-            //tvRoomType = itemView.findViewById(R.id.tvRoomType);
-            //tvRoomPrice = itemView.findViewById(R.id.tvRoomPrice);
+            tvRoomNumber = itemView.findViewById(R.id.tvRoomNumber);
+            tvRoomType = itemView.findViewById(R.id.tvRoomType);
+            tvRoomPrice = itemView.findViewById(R.id.tvRoomPrice);
+            tvRoomStatus = itemView.findViewById(R.id.tvRoomStatus);
 
             itemView.setOnLongClickListener(this);
         }
@@ -78,8 +121,14 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.ViewHolder> {
         }
     }
 
-    // Helper method to get the position for long-press actions (like context menus)
     public int getCurrentPos() {
         return currentPos;
+    }
+
+    public Room getSelectedRoom() {
+        if (currentPos >= 0 && currentPos < roomListData.size()) {
+            return roomListData.get(currentPos);
+        }
+        return null;
     }
 }

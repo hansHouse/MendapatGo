@@ -17,14 +17,12 @@ import com.example.mendapatgo.sharedpref.SharedPrefManager;
 public class CustomerDashboardActivity extends AppCompatActivity {
 
     private TextView tvWelcome;
-    // Updated button name to match the new XML
     private Button btnLogout, btnViewRooms, btnMyBookings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        // Ensure this matches your new XML filename
         setContentView(R.layout.activity_customer_dashboard);
 
         // Check if the root view ID is "main" in your XML
@@ -36,9 +34,9 @@ public class CustomerDashboardActivity extends AppCompatActivity {
             });
         }
 
-        // 1. Initialize UI components from the new XML
+        // 1. Initialize UI components from the XML
         tvWelcome = findViewById(R.id.tvWelcome);
-        btnViewRooms = findViewById(R.id.btnViewRooms); // New button for the list
+        btnViewRooms = findViewById(R.id.btnViewRooms);
         btnMyBookings = findViewById(R.id.btnMyBookings);
         btnLogout = findViewById(R.id.btnLogout);
 
@@ -54,18 +52,19 @@ public class CustomerDashboardActivity extends AppCompatActivity {
 
         // 3. Set Button Actions
 
-        // This button now opens the room list
+        // Open room list when user clicks "View Available Rooms"
         btnViewRooms.setOnClickListener(v -> {
-            // Usually, you'd create a new Activity like RoomListActivity
-            // to hold the RecyclerView we worked on earlier.
             Intent intent = new Intent(this, RoomListActivity.class);
             startActivity(intent);
         });
 
+        // Open My Bookings activity (CORRECTED)
         btnMyBookings.setOnClickListener(v -> {
-            startActivity(new Intent(this, BookingActivity.class));
+            Intent intent = new Intent(this, MyBookingActivity.class);
+            startActivity(intent);
         });
 
+        // Logout button
         btnLogout.setOnClickListener(v -> clearSessionAndRedirect());
     }
 

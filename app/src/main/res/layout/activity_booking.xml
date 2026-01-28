@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="#F5F5F5"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -10,85 +11,151 @@
         android:orientation="vertical"
         android:padding="24dp">
 
+        <!-- Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Book Room"
-            android:textSize="24sp"
+            android:text="Book Your Room"
+            android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="#2196F3"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:id="@+id/tvRoomInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Room Info"
-            android:textSize="16sp"
-            android:textColor="#333"
-            android:padding="12dp"
-            android:background="#FFF"
             android:layout_marginBottom="24dp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Check-in Date (YYYY-MM-DD)"
-            android:textSize="14sp"
-            android:textColor="#666"
-            android:layout_marginBottom="8dp"/>
-
-        <EditText
-            android:id="@+id/etCheckIn"
+        <!-- Room Information Card -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="2024-01-15"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="24dp"
+            android:elevation="4dp"
+            android:radius="8dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Check-out Date (YYYY-MM-DD)"
-            android:textSize="14sp"
-            android:textColor="#666"
-            android:layout_marginBottom="8dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <EditText
-            android:id="@+id/etCheckOut"
+                <TextView
+                    android:id="@+id/tvRoomInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Room A-101 - Deluxe Suite"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000"/>
+
+                <TextView
+                    android:id="@+id/tvRoomPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RM 150.00 per night"
+                    android:textSize="18sp"
+                    android:textColor="#2196F3"
+                    android:layout_marginTop="8dp"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Booking Details Card -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="2024-01-20"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="24dp"
+            android:elevation="4dp"
+            android:radius="8dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Check-in Date -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Check-in Date"
+                    android:textSize="14sp"
+                    android:textColor="#666"
+                    android:textStyle="bold"/>
+
+                <EditText
+                    android:id="@+id/etCheckInDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select check-in date"
+                    android:padding="12dp"
+                    android:textSize="16sp"
+                    android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                    android:focusable="false"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Check-out Date -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Check-out Date"
+                    android:textSize="14sp"
+                    android:textColor="#666"
+                    android:textStyle="bold"/>
+
+                <EditText
+                    android:id="@+id/etCheckOutDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select check-out date"
+                    android:padding="12dp"
+                    android:textSize="16sp"
+                    android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                    android:focusable="false"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Number of Guests -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Number of Guests"
+                    android:textSize="14sp"
+                    android:textColor="#666"
+                    android:textStyle="bold"/>
+
+                <EditText
+                    android:id="@+id/etGuests"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter number of guests"
+                    android:inputType="number"
+                    android:padding="12dp"
+                    android:textSize="16sp"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Total Price Display -->
         <TextView
+            android:id="@+id/tvTotalPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Number of Guests"
-            android:textSize="14sp"
-            android:textColor="#666"
-            android:layout_marginBottom="8dp"/>
-
-        <EditText
-            android:id="@+id/etGuests"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="2"
-            android:inputType="number"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text"
+            android:text="Total: RM 0.00"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#4CAF50"
+            android:layout_gravity="center"
             android:layout_marginBottom="24dp"/>
 
+        <!-- Confirm Booking Button -->
         <Button
             android:id="@+id/btnConfirmBooking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Confirm Booking"
-            android:textSize="16sp"
-            android:backgroundTint="#4CAF50"/>
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"/>
 
     </LinearLayout>
 

@@ -1,17 +1,15 @@
 package com.example.mendapatgo.sharedpref;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 
-import com.example.mendapatgo.LoginActivity;
 import com.example.mendapatgo.RoomListActivity;
 import com.example.mendapatgo.model.User;
 
 public class SharedPrefManager {
 
     //the constants
-    private static final String SHARED_PREF_NAME = "bookstoresharedpref";
+    private static final String SHARED_PREF_NAME = "hotelsharedpref";
     private static final String KEY_ID = "keyid";
     private static final String KEY_USERNAME = "keyusername";
     private static final String KEY_EMAIL = "keyemail";
@@ -23,7 +21,7 @@ public class SharedPrefManager {
         mCtx = context;
     }
 
-    public static SharedPrefManager getInstance(RoomListActivity roomListActivity) {
+    public static void getInstance(RoomListActivity roomListActivity) {
     }
 
    

@@ -5,38 +5,66 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#4CAF50"
-        android:padding="16dp">
+        android:background="#2196F3"
+        android:padding="16dp"
+        android:elevation="4dp">
 
         <TextView
-            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="My Bookings"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="#FFF"/>
+            android:textColor="#FFFFFF"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Your booking history"
+            android:text="View and manage your hotel bookings"
             android:textSize="14sp"
-            android:textColor="#FFF"
+            android:textColor="#E3F2FD"
             android:layout_marginTop="4dp"/>
 
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/lvMyBookings"
+    <!-- Content -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
-        android:divider="#CCC"
-        android:dividerHeight="1dp"/>
+        android:layout_height="match_parent">
+
+        <!-- Loading Indicator -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible"/>
+
+        <!-- Bookings List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvBookings"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:visibility="gone"/>
+
+        <!-- No Bookings Message -->
+        <TextView
+            android:id="@+id/tvNoBookings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No bookings found"
+            android:textSize="16sp"
+            android:textColor="#666"
+            android:gravity="center"
+            android:visibility="gone"/>
+
+    </FrameLayout>
 
 </LinearLayout>

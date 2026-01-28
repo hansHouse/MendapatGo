@@ -26,7 +26,7 @@
         <activity android:name=".CustomerDashboardActivity" />
         <activity android:name=".AdminDashboardActivity" />
         <activity android:name=".BookingActivity" />
-        <activity android:name=".MyBookingsActivity" />
+        <activity android:name=".MyBookingActivity" />
         <activity android:name=".ManageRoomsActivity" />
         <activity android:name=".ManageBookingsActivity" />
         <activity android:name=".RoomListActivity" />
