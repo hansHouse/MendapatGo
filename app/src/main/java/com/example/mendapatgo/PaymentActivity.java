@@ -82,7 +82,7 @@ public class PaymentActivity extends AppCompatActivity {
         userId = user.getId();
         token = user.getToken();
 
-        // ✅ DEBUG LOGGING
+        //DEBUG LOGGING
         Log.d(TAG, "=== Booking Details ===");
         Log.d(TAG, "Room ID: " + roomId);
         Log.d(TAG, "Room Number: " + roomNumber);
@@ -96,21 +96,21 @@ public class PaymentActivity extends AppCompatActivity {
 
         // Validate critical data
         if (userId <= 0) {
-            Log.e(TAG, "❌ ERROR: Invalid User ID!");
+            Log.e(TAG, "ERROR: Invalid User ID!");
             Toast.makeText(this, "Error: User session invalid. Please login again.", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
         if (token == null || token.isEmpty()) {
-            Log.e(TAG, "❌ ERROR: Token is NULL or EMPTY!");
+            Log.e(TAG, "ERROR: Token is NULL or EMPTY!");
             Toast.makeText(this, "Error: Authentication token missing. Please login again.", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
         if (roomId <= 0) {
-            Log.e(TAG, "❌ ERROR: Invalid Room ID!");
+            Log.e(TAG, "ERROR: Invalid Room ID!");
             Toast.makeText(this, "Error: Invalid room selection.", Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -179,9 +179,9 @@ public class PaymentActivity extends AppCompatActivity {
         Log.d(TAG, "Payment Method (booking_method): " + paymentMethod);
         Log.d(TAG, "Payment Status: paid");
 
-        // ✅ FIXED: Changed BookService to BookingService and getBookService to getBookingService
+        // Changed BookService to BookingService and getBookService to getBookingService
         BookingService bookingService = ApiUtils.getBookingService();
-        Call<ResponseBody> call = bookingService.createBookingWithPayment(
+        Call<ResponseBody> call = bookingService.createBooking(
                 token,
                 userId,
                 roomId,
@@ -205,7 +205,7 @@ public class PaymentActivity extends AppCompatActivity {
                 Log.d(TAG, "Response Headers: " + response.headers().toString());
 
                 if (response.code() == 200 || response.code() == 201) {
-                    Log.d(TAG, "✅ SUCCESS: Booking created successfully!");
+                    Log.d(TAG, "SUCCESS: Booking created successfully!");
 
                     // Try to log response body
                     try {
@@ -222,7 +222,7 @@ public class PaymentActivity extends AppCompatActivity {
                     showPaymentSuccessDialog();
 
                 } else if (response.code() == 401) {
-                    Log.e(TAG, "❌ ERROR 401: Unauthorized - Token invalid or expired");
+                    Log.e(TAG, "ERROR 401: Unauthorized - Token invalid or expired");
 
                     // Try to read error body for more details
                     try {
@@ -240,7 +240,7 @@ public class PaymentActivity extends AppCompatActivity {
                     finish();
 
                 } else if (response.code() == 400) {
-                    Log.e(TAG, "❌ ERROR 400: Bad Request - Invalid data sent to API");
+                    Log.e(TAG, "ERROR 400: Bad Request - Invalid data sent to API");
 
                     // Try to get error details
                     try {

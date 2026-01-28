@@ -15,7 +15,6 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
-import retrofit2.http.PUT;
 import retrofit2.http.Query;
 
 public interface BookingService {
@@ -34,7 +33,21 @@ public interface BookingService {
     // Get user's bookings
     @GET("bookings/user/{userId}")
     Call<List<BookingResponse>> getUserBooking(
-            @Header("Authorization") String token,
+            @Header("api-key") String token,
+            @Path("userId") int userId
+    );
+
+    // Get user's bookings
+    @GET("bookings/user/{userId}")
+    Call<List<BookingResponse>> getUserBookingWithApiKey(
+            @Header("api-key") String apiKey,
+            @Path("userId") int userId
+    );
+
+    // Get user's bookings
+    @GET("bookings/user/{userId}")
+    Call<List<BookingResponse>> getUserBookingsWithAuth(
+            @Header("api-key") String token,
             @Path("userId") int userId
     );
 
@@ -46,9 +59,8 @@ public interface BookingService {
     );
 
     // Update booking status
-    // Alternative if your API requires PUT
     @FormUrlEncoded
-    @PUT("bookings/{bookingId}/status")
+    @POST("bookings/{bookingId}")
     Call<Booking> updateBookingStatus(
             @Header("api-key") String apiKey,
             @Path("bookingId") int bookingId,
@@ -59,9 +71,9 @@ public interface BookingService {
     // Create booking with payment
     @FormUrlEncoded
     @POST("bookings")
-    Call<ResponseBody> createBookingWithPayment(
-            @Header("Authorization") String token,
-            @Field("user_id") int userId,
+    Call<ResponseBody> createBooking(
+            @Header("api-key") String token,
+            @Field("id") int Id,
             @Field("room_id") int roomId,
             @Field("check_in_date") String checkInDate,
             @Field("check_out_date") String checkOutDate,
@@ -69,5 +81,11 @@ public interface BookingService {
             @Field("total_price") double totalPrice,
             @Field("booking_method") String bookingMethod,
             @Field("payment_status") String paymentStatus
+    );
+
+    @GET("bookings")
+    Call<List<BookingResponse>> getUserBooking(
+            @Query("id") int userId,
+            @Query("api-key") String token
     );
 }

@@ -1,5 +1,7 @@
 package com.example.mendapatgo;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +25,8 @@ import retrofit2.Response;
 
 public class UpdateBookingActivity extends AppCompatActivity {
 
+    private static final String TAG = "UpdateBookingActivity";
+
     private TextView tvBookingId;
     private TextView tvRoomInfo;
     private TextView tvCheckInDate;
@@ -32,6 +36,7 @@ public class UpdateBookingActivity extends AppCompatActivity {
     private Spinner spinnerPaymentStatus;
 
     private int bookingId;
+    private Booking currentBooking;
 
     // API key for accessing the booking service
     private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
@@ -60,6 +65,8 @@ public class UpdateBookingActivity extends AppCompatActivity {
         // get booking id from intent
         bookingId = getIntent().getIntExtra("booking_id", 0);
 
+        Log.d(TAG, "Opening UpdateBookingActivity for booking ID: " + bookingId);
+
         // fetch booking details and populate form
         fetchBookingDetails();
     }
@@ -71,44 +78,56 @@ public class UpdateBookingActivity extends AppCompatActivity {
         call.enqueue(new Callback<Booking>() {
             @Override
             public void onResponse(Call<Booking> call, Response<Booking> response) {
+                Log.d(TAG, "Response code: " + response.code());
+
                 if (response.code() == 200) {
-                    Booking booking = response.body();
+                    // server return success
+                    currentBooking = response.body();
+
+                    Log.d(TAG, "Booking retrieved: " + currentBooking.toString());
 
                     // populate form with booking data
-                    tvBookingId.setText("Booking #" + booking.getBookingId());
-                    tvRoomInfo.setText("Room " + booking.getRoomId()); // You may want to fetch room details
-                    tvCheckInDate.setText(booking.getCheckInDate());
-                    tvCheckOutDate.setText(booking.getCheckOutDate());
-                    tvGuests.setText(String.valueOf(booking.getGuests()));
+                    tvBookingId.setText("Booking #" + currentBooking.getBookingId());
+                    tvRoomInfo.setText("Room " + currentBooking.getRoomId());
+                    tvCheckInDate.setText(currentBooking.getCheckInDate());
+                    tvCheckOutDate.setText(currentBooking.getCheckOutDate());
+                    tvGuests.setText(String.valueOf(currentBooking.getGuests()));
 
                     // set booking status spinner selection
-                    String bookingStatus = booking.getBookingStatus();
+                    String bookingStatus = currentBooking.getBookingStatus();
                     String[] bookingStatusArray = getResources().getStringArray(R.array.booking_status_array);
                     for (int i = 0; i < bookingStatusArray.length; i++) {
-                        if (bookingStatusArray[i].equals(bookingStatus)) {
+                        if (bookingStatusArray[i].equalsIgnoreCase(bookingStatus)) {
                             spinnerBookingStatus.setSelection(i);
                             break;
                         }
                     }
 
                     // set payment status spinner selection
-                    String paymentStatus = booking.getPaymentStatus();
+                    String paymentStatus = currentBooking.getPaymentStatus();
                     String[] paymentStatusArray = getResources().getStringArray(R.array.payment_status_array);
                     for (int i = 0; i < paymentStatusArray.length; i++) {
-                        if (paymentStatusArray[i].equals(paymentStatus)) {
+                        if (paymentStatusArray[i].equalsIgnoreCase(paymentStatus)) {
                             spinnerPaymentStatus.setSelection(i);
                             break;
                         }
                     }
-                } else {
-                    Toast.makeText(getApplicationContext(), "Error loading booking details", Toast.LENGTH_SHORT).show();
+                }
+                else if (response.code() == 401) {
+                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
+                    finish();
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, response.toString());
                     finish();
                 }
             }
 
             @Override
             public void onFailure(Call<Booking> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error connecting", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Error: " + t.getMessage());
                 finish();
             }
         });
@@ -123,6 +142,9 @@ public class UpdateBookingActivity extends AppCompatActivity {
         String bookingStatus = spinnerBookingStatus.getSelectedItem().toString();
         String paymentStatus = spinnerPaymentStatus.getSelectedItem().toString();
 
+        Log.d(TAG, "Updating booking: " + bookingId);
+        Log.d(TAG, "Sending: Booking Status=" + bookingStatus + ", Payment Status=" + paymentStatus);
+
         // send request to update booking to the REST API
         BookingService bookingService = ApiUtils.getBookingService();
         Call<Booking> call = bookingService.updateBookingStatus(API_KEY, bookingId, bookingStatus, paymentStatus);
@@ -131,28 +153,77 @@ public class UpdateBookingActivity extends AppCompatActivity {
         call.enqueue(new Callback<Booking>() {
             @Override
             public void onResponse(Call<Booking> call, Response<Booking> response) {
-                Log.d("MyApp:", "Response: " + response.raw().toString());
+                Log.d(TAG, "Update Response: " + response.code());
 
                 if (response.code() == 200) {
                     // booking updated successfully
-                    Toast.makeText(getApplicationContext(),
-                            "Booking updated successfully.",
-                            Toast.LENGTH_LONG).show();
-
-                    // end this activity and go back
-                    finish();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
-                    Log.e("MyApp: ", response.toString());
+                    Booking updatedBooking = response.body();
+                    if (updatedBooking != null) {
+                        displayUpdateSuccess("Booking #" + updatedBooking.getBookingId() + " updated successfully.");
+                    } else {
+                        displayUpdateSuccess("Booking updated successfully.");
+                    }
+                }
+                else if (response.code() == 401) {
+                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Log.e(TAG, "Error " + response.code() + ": " + errorBody);
+                        Toast.makeText(getApplicationContext(),
+                                "Error " + response.code() + ": " + response.message(),
+                                Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Could not read error body: " + e.getMessage());
+                        Toast.makeText(getApplicationContext(),
+                                "Error: " + response.message(),
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<Booking> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "Error [" + t.getMessage() + "]",
-                        Toast.LENGTH_LONG).show();
-                Log.d("MyApp:", "Error: " + t.getMessage());
+                displayAlert("Error: " + t.getMessage());
+                Log.e(TAG, "Error: " + t.getMessage());
             }
         });
+    }
+
+    /**
+     * Displaying an alert dialog with a single button for update success
+     * @param message - message to be displayed
+     */
+    public void displayUpdateSuccess(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // end this activity and go back to previous activity
+                        finish();
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * Displaying an alert dialog with a single button
+     * @param message - message to be displayed
+     */
+    public void displayAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }

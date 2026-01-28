@@ -80,8 +80,7 @@ public class LoginActivity extends AppCompatActivity {
                     // 2. Logic to switch between Admin and Customer
                     Intent intent;
 
-                    // Check user role (Assuming your User model has getRole())
-                    // Adjust "admin" to match exactly what your database/API returns
+                    // Check user role
                     if (user.getRole() != null && user.getRole().equalsIgnoreCase("admin")) {
                         intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
                     } else {

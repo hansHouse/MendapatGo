@@ -85,7 +85,7 @@ public class ManageRoomsActivity extends AppCompatActivity {
                     // Get list of room objects from response
                     List<Room> rooms = response.body();
 
-                    Log.d("MyApp:", "✅ SUCCESS: Retrieved " + (rooms != null ? rooms.size() : 0) + " rooms");
+                    Log.d("MyApp:", "SUCCESS: Retrieved " + (rooms != null ? rooms.size() : 0) + " rooms");
 
                     // initialize adapter
                     adapter = new AdminRoomAdapter(getApplicationContext(), rooms);
@@ -103,12 +103,12 @@ public class ManageRoomsActivity extends AppCompatActivity {
                     rvRoomList.addItemDecoration(dividerItemDecoration);
 
                 } else if (response.code() == 401) {
-                    Log.e("MyApp:", "❌ ERROR 401: Unauthorized");
+                    Log.e("MyApp:", "ERROR 401: Unauthorized");
                     Toast.makeText(getApplicationContext(),
                             "Unauthorized: Invalid or missing API key",
                             Toast.LENGTH_LONG).show();
                 } else {
-                    Log.e("MyApp:", "❌ ERROR: " + response.code() + " - " + response.message());
+                    Log.e("MyApp:", "ERROR: " + response.code() + " - " + response.message());
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
                         Log.e("MyApp:", "Error Body: " + errorBody);
@@ -155,15 +155,15 @@ public class ManageRoomsActivity extends AppCompatActivity {
 
                 if (response.code() == 200) {
                     // 200 means OK
-                    Log.d("MyApp:", "✅ Room deleted successfully");
+                    Log.d("MyApp:", "Room deleted successfully");
                     displayAlert("Room successfully deleted");
                     // update data in list view
                     updateRecyclerView();
                 } else if (response.code() == 401) {
-                    Log.e("MyApp:", "❌ ERROR 401: Unauthorized on delete");
+                    Log.e("MyApp:", "ERROR 401: Unauthorized on delete");
                     displayAlert("Unauthorized: Cannot delete room. Check API key.");
                 } else {
-                    Log.e("MyApp:", "❌ Delete failed: " + response.code() + " - " + response.message());
+                    Log.e("MyApp:", "Delete failed: " + response.code() + " - " + response.message());
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
                         Log.e("MyApp:", "Error Body: " + errorBody);
@@ -176,7 +176,7 @@ public class ManageRoomsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<DeleteResponse> call, Throwable t) {
-                Log.e("MyApp:", "❌ Delete API call failed: " + t.getMessage());
+                Log.e("MyApp:", "Delete API call failed: " + t.getMessage());
                 displayAlert("Error: " + t.getMessage());
             }
         });

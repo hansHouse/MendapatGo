@@ -66,7 +66,7 @@ public class RoomListActivity extends AppCompatActivity {
         // get room service instance
         roomService = ApiUtils.getRoomService();
 
-        // ✅ FIXED: Now we're actually SENDING the API key!
+        //SENDING the API key!
         roomService.getAllRooms(API_KEY).enqueue(new Callback<List<Room>>() {
             @Override
             public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
@@ -74,13 +74,13 @@ public class RoomListActivity extends AppCompatActivity {
                 Log.d("MyApp:", "Response: " + response.raw().toString());
 
                 if (response.code() == 200) {
-                    Log.d("MyApp:", "✅ SUCCESS! Response code 200");
+                    Log.d("MyApp:", "SUCCESS! Response code 200");
 
                     // Get list of room object from response
                     List<Room> rooms = response.body();
 
                     if (rooms != null && !rooms.isEmpty()) {
-                        Log.d("MyApp:", "✅ Loaded " + rooms.size() + " rooms");
+                        Log.d("MyApp:", "Loaded " + rooms.size() + " rooms");
 
                         // initialize adapter
                         adapter = new RoomAdapter(getApplicationContext(), rooms);
@@ -98,10 +98,10 @@ public class RoomListActivity extends AppCompatActivity {
                         rvRoomList.addItemDecoration(dividerItemDecoration);
 
                         Toast.makeText(getApplicationContext(),
-                                "✅ Loaded " + rooms.size() + " rooms!",
+                                "Loaded " + rooms.size() + " rooms!",
                                 Toast.LENGTH_SHORT).show();
                     } else {
-                        Log.e("MyApp:", "❌ Room list is empty or null");
+                        Log.e("MyApp:", "Room list is empty or null");
                         Toast.makeText(getApplicationContext(),
                                 "No rooms available in database",
                                 Toast.LENGTH_LONG).show();
@@ -109,13 +109,13 @@ public class RoomListActivity extends AppCompatActivity {
                 }
                 else if (response.code() == 401) {
                     // invalid API key
-                    Log.e("MyApp:", "❌ ERROR 401: Unauthorized - Invalid API key");
+                    Log.e("MyApp:", "ERROR 401: Unauthorized - Invalid API key");
                     Toast.makeText(getApplicationContext(),
-                            "❌ Invalid API key. Please check configuration",
+                            "Invalid API key. Please check configuration",
                             Toast.LENGTH_LONG).show();
                 }
                 else {
-                    Log.e("MyApp:", "❌ ERROR " + response.code() + ": " + response.message());
+                    Log.e("MyApp:", "ERROR " + response.code() + ": " + response.message());
                     Toast.makeText(getApplicationContext(),
                             "Error " + response.code() + ": " + response.message(),
                             Toast.LENGTH_LONG).show();
@@ -124,7 +124,7 @@ public class RoomListActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Room>> call, Throwable t) {
-                Log.e("MyApp:", "❌ Connection failed: " + t.getMessage());
+                Log.e("MyApp:", "Connection failed: " + t.getMessage());
                 t.printStackTrace();
 
                 Toast.makeText(getApplicationContext(),

@@ -33,7 +33,7 @@ public class UpdateRoomActivity extends AppCompatActivity {
     private EditText txtPrice;
     private Spinner spinnerStatus;
 
-    private Room room; // current room to be updated
+    private Room room;
     private int roomId;
 
     // API key for accessing the room service
@@ -160,13 +160,12 @@ public class UpdateRoomActivity extends AppCompatActivity {
         // send request to update the room record to the REST API
         RoomService roomService = ApiUtils.getRoomService();
 
-        // CRITICAL: Send price as double, not string!
         Call<Room> call = roomService.updateRoom(
                 API_KEY,
                 room.getRoomId(),
                 roomNumber,
                 roomType,
-                price,      // double, not String!
+                price,
                 status
         );
 

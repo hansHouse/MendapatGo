@@ -69,8 +69,8 @@ public class MyBookingActivity extends AppCompatActivity {
         int userId = user.getId();
 
         // Call API to get bookings
-        BookingService bookService = ApiUtils.getBookingService();
-        Call<List<BookingResponse>> call = bookService.getUserBooking(token, userId);
+        BookingService bookingService = ApiUtils.getBookingService();
+        Call<List<BookingResponse>> call = bookingService.getUserBooking(userId, token);
 
         call.enqueue(new Callback<List<BookingResponse>>() {
             @Override

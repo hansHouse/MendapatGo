@@ -25,7 +25,7 @@ public class CustomerDashboardActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_customer_dashboard);
 
-        // Check if the root view ID is "main" in your XML
+        // Check if the root view ID is "main" in XML
         if (findViewById(R.id.main) != null) {
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -58,7 +58,7 @@ public class CustomerDashboardActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Open My Bookings activity (CORRECTED)
+        // Open My Bookings activity
         btnMyBookings.setOnClickListener(v -> {
             Intent intent = new Intent(this, MyBookingActivity.class);
             startActivity(intent);

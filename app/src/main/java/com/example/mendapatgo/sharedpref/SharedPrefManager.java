@@ -38,7 +38,7 @@ public class SharedPrefManager {
     }
 
     /**
-     * This method will check whether user is already logged in or not.
+     * check whether user is already logged in or not.
      * Return True if already logged in
      */
     public boolean isLoggedIn() {
@@ -47,7 +47,7 @@ public class SharedPrefManager {
     }
 
     /**
-     * This method will give the information of logged in user, retrieved from SharedPreferences
+     * give the info of logged in user, retrieved from SharedPreferences
      */
     public User getUser() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
@@ -57,13 +57,13 @@ public class SharedPrefManager {
         user.setUsername(sharedPreferences.getString(KEY_USERNAME, null));
         user.setEmail(sharedPreferences.getString(KEY_EMAIL, null));
         user.setRole(sharedPreferences.getString(KEY_ROLE, null));
-        user.setToken(sharedPreferences.getString(KEY_TOKEN, null));  // ✅ RETRIEVE TOKEN
+        user.setToken(sharedPreferences.getString(KEY_TOKEN, null));
 
         return user;
     }
 
     /**
-     * This method will logout the user. Clear the SharedPreferences
+     * Logout the user. Clear the SharedPreferences
      */
     public void logout() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);

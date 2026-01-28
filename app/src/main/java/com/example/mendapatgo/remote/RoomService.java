@@ -44,8 +44,6 @@ public interface RoomService {
 
     /**
      * Update an existing room
-     * CRITICAL: Uses POST with id in path, not PUT
-     * This API expects form data, not JSON
      */
     @FormUrlEncoded
     @POST("rooms/{id}")

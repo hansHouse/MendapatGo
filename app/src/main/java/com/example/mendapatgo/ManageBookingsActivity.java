@@ -40,6 +40,7 @@ public class ManageBookingsActivity extends AppCompatActivity {
 
     // API key for accessing the booking service
     private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
+    private static final String TAG = "ManageBookingsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,15 +71,22 @@ public class ManageBookingsActivity extends AppCompatActivity {
         // get booking service instance
         bookingService = ApiUtils.getBookingService();
 
+        Log.d(TAG, "=== Fetching Bookings ===");
+        Log.d(TAG, "API URL: " + ApiUtils.BASE_URL + "bookings");
+        Log.d(TAG, "API Key: " + API_KEY);
+
         // execute the call
         bookingService.getAllBookings(API_KEY).enqueue(new Callback<List<Booking>>() {
             @Override
             public void onResponse(Call<List<Booking>> call, Response<List<Booking>> response) {
-                Log.d("MyApp:", "Response: " + response.raw().toString());
+                Log.d(TAG, "=== Response Received ===");
+                Log.d(TAG, "Response Code: " + response.code());
 
                 if (response.code() == 200) {
                     // Get list of booking objects from response
                     List<Booking> bookings = response.body();
+
+                    Log.d(TAG, "✅ SUCCESS: Retrieved " + (bookings != null ? bookings.size() : 0) + " bookings");
 
                     // initialize adapter
                     adapter = new AdminBookingAdapter(getApplicationContext(), bookings);
@@ -94,16 +102,35 @@ public class ManageBookingsActivity extends AppCompatActivity {
                             rvBookingList.getContext(),
                             DividerItemDecoration.VERTICAL);
                     rvBookingList.addItemDecoration(dividerItemDecoration);
+
+                } else if (response.code() == 401) {
+                    Log.e(TAG, "❌ ERROR 401: Unauthorized");
+                    Toast.makeText(getApplicationContext(),
+                            "Unauthorized: Invalid or missing API key",
+                            Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
-                    Log.e("MyApp: ", response.toString());
+                    Log.e(TAG, "❌ ERROR: " + response.code() + " - " + response.message());
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+                        Log.e(TAG, "Error Body: " + errorBody);
+                        Toast.makeText(getApplicationContext(),
+                                "Error " + response.code() + ": " + response.message(),
+                                Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(getApplicationContext(),
+                                "Error: " + response.message(),
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<List<Booking>> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "Error connecting to the server", Toast.LENGTH_LONG).show();
-                Log.e("MyApp:", t.toString());
+                Log.e(TAG, "=== API CALL FAILED ===");
+                Log.e(TAG, "Error: " + t.getMessage());
+                Toast.makeText(getApplicationContext(),
+                        "Error connecting to server: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -113,6 +140,11 @@ public class ManageBookingsActivity extends AppCompatActivity {
      * @param selectedBooking - booking selected by admin
      */
     private void doDeleteBooking(Booking selectedBooking) {
+        Log.d(TAG, "=== DELETING BOOKING ===");
+        Log.d(TAG, "Booking ID: " + selectedBooking.getBookingId());
+        Log.d(TAG, "User ID: " + selectedBooking.getUserId());
+        Log.d(TAG, "Room ID: " + selectedBooking.getRoomId());
+
         // prepare REST API call
         BookingService bookingService = ApiUtils.getBookingService();
         Call<DeleteResponse> call = bookingService.deleteBooking(API_KEY, selectedBooking.getBookingId());
@@ -121,21 +153,33 @@ public class ManageBookingsActivity extends AppCompatActivity {
         call.enqueue(new Callback<DeleteResponse>() {
             @Override
             public void onResponse(Call<DeleteResponse> call, Response<DeleteResponse> response) {
+                Log.d(TAG, "Delete Response Code: " + response.code());
+
                 if (response.code() == 200) {
                     // 200 means OK
+                    Log.d(TAG, "Booking deleted successfully");
                     displayAlert("Booking successfully deleted");
                     // update data in list view
                     updateRecyclerView();
+                } else if (response.code() == 401) {
+                    Log.e(TAG, "ERROR 401: Unauthorized on delete");
+                    displayAlert("Unauthorized: Cannot delete booking. Check API key.");
                 } else {
-                    Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
-                    Log.e("MyApp: ", response.toString());
+                    Log.e(TAG, "Delete failed: " + response.code() + " - " + response.message());
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+                        Log.e(TAG, "Error Body: " + errorBody);
+                        displayAlert("Error: " + response.message() + "\n" + errorBody);
+                    } catch (Exception e) {
+                        displayAlert("Error: " + response.message());
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<DeleteResponse> call, Throwable t) {
-                displayAlert("Error [" + t.getMessage() + "]");
-                Log.e("MyApp:", t.getMessage());
+                Log.e(TAG, "Delete API call failed: " + t.getMessage());
+                displayAlert("Error: " + t.getMessage());
             }
         });
     }
@@ -166,11 +210,27 @@ public class ManageBookingsActivity extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         Booking selectedBooking = adapter.getSelectedItem();
-        Log.d("MyApp", "selected " + selectedBooking.toString());
+
+        if (selectedBooking == null) {
+            Toast.makeText(this, "No booking selected", Toast.LENGTH_SHORT).show();
+            return super.onContextItemSelected(item);
+        }
+
+        Log.d(TAG, "Context menu item selected for booking: " + selectedBooking.toString());
 
         if (item.getItemId() == R.id.menu_delete) {
-            // user clicked the delete contextual menu
-            doDeleteBooking(selectedBooking);
+            // Show confirmation dialog before deleting
+            new AlertDialog.Builder(this)
+                    .setTitle("Confirm Delete")
+                    .setMessage("Are you sure you want to delete booking #" + selectedBooking.getBookingId() + "?")
+                    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            doDeleteBooking(selectedBooking);
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
         } else if (item.getItemId() == R.id.menu_update) {
             // user clicked the update contextual menu
             doUpdateBooking(selectedBooking);
@@ -179,7 +239,7 @@ public class ManageBookingsActivity extends AppCompatActivity {
     }
 
     private void doUpdateBooking(Booking selectedBooking) {
-        Log.d("MyApp:", "updating booking: " + selectedBooking.toString());
+        Log.d(TAG, "Updating booking: " + selectedBooking.toString());
         // forward admin to UpdateBookingActivity, passing the selected booking id
         Intent intent = new Intent(getApplicationContext(), UpdateBookingActivity.class);
         intent.putExtra("booking_id", selectedBooking.getBookingId());

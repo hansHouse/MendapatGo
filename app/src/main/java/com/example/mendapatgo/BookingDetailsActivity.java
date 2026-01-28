@@ -136,7 +136,6 @@ public class BookingDetailsActivity extends AppCompatActivity {
         User user = spm.getUser();
         String token = user.getToken();
 
-        // ✅ FIXED: Changed BookService to BookingService
         BookingService bookingService = ApiUtils.getBookingService();
 
         // Call API to update booking status to cancelled
