@@ -6,7 +6,9 @@
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="4dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,29 +20,29 @@
             android:id="@+id/tvRoomNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Room: A-101"
-            android:textSize="20sp"
+            android:text="Room: 101"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#000000"/>
+            android:textColor="#333333"/>
 
         <TextView
             android:id="@+id/tvRoomType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Type: Deluxe Suite"
+            android:text="Type: Deluxe"
             android:textSize="16sp"
-            android:textColor="#666666"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="4dp"
+            android:textColor="#555555"/>
 
         <TextView
             android:id="@+id/tvRoomPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="RM 150.00 per night"
-            android:textSize="18sp"
-            android:textColor="#2196F3"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:textColor="#2196F3"/>
 
         <TextView
             android:id="@+id/tvRoomStatus"
@@ -50,7 +52,11 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:layout_marginTop="4dp"
-            android:visibility="visible"/>
+            android:textColor="#4CAF50"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"/>
 
     </LinearLayout>
 

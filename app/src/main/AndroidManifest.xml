@@ -3,6 +3,7 @@
     package="com.example.mendapatgo">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -10,6 +11,7 @@
         android:label="MendapatGo"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
 
         <activity
@@ -25,11 +27,20 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".CustomerDashboardActivity" />
         <activity android:name=".AdminDashboardActivity" />
-        <activity android:name=".BookingActivity" />
-        <activity android:name=".MyBookingActivity" />
-        <activity android:name=".ManageRoomsActivity" />
-        <activity android:name=".ManageBookingsActivity" />
         <activity android:name=".RoomListActivity" />
+        <activity android:name=".BookingActivity" />
+        <activity android:name=".PaymentActivity" />
+        <activity android:name=".MyBookingActivity" />
+        <activity android:name=".BookingDetailsActivity" />
+
+        <!-- Admin Room Management Activities -->
+        <activity android:name=".ManageRoomsActivity" />
+        <activity android:name=".NewRoomActivity" />
+        <activity android:name=".UpdateRoomActivity" />
+
+        <!-- Admin Booking Management Activities -->
+        <activity android:name=".ManageBookingsActivity" />
+        <activity android:name=".UpdateBookingActivity" />
 
     </application>
 

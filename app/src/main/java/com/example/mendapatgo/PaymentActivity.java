@@ -14,8 +14,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
-import com.example.mendapatgo.remote.BookService;
+import com.example.mendapatgo.remote.BookingService;
 import com.example.mendapatgo.sharedpref.SharedPrefManager;
+
+import java.io.IOException;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -23,6 +25,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PaymentActivity extends AppCompatActivity {
+
+    private static final String TAG = "PaymentActivity";
 
     private TextView tvBookingSummary, tvPaymentAmount;
     private RadioGroup rgPaymentMethod;
@@ -33,11 +37,14 @@ public class PaymentActivity extends AppCompatActivity {
     private int roomId, userId, guests;
     private String roomNumber, roomType, checkInDate, checkOutDate;
     private double totalPrice;
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment);
+
+        Log.d(TAG, "=== PaymentActivity Started ===");
 
         // Initialize views
         tvBookingSummary = findViewById(R.id.tvBookingSummary);
@@ -69,10 +76,45 @@ public class PaymentActivity extends AppCompatActivity {
         guests = intent.getIntExtra("GUESTS", 1);
         totalPrice = intent.getDoubleExtra("TOTAL_PRICE", 0.0);
 
-        // Get user ID from SharedPreferences
+        // Get user ID and token from SharedPreferences
         SharedPrefManager spm = new SharedPrefManager(this);
         User user = spm.getUser();
         userId = user.getId();
+        token = user.getToken();
+
+        // ✅ DEBUG LOGGING
+        Log.d(TAG, "=== Booking Details ===");
+        Log.d(TAG, "Room ID: " + roomId);
+        Log.d(TAG, "Room Number: " + roomNumber);
+        Log.d(TAG, "Room Type: " + roomType);
+        Log.d(TAG, "Check-in: " + checkInDate);
+        Log.d(TAG, "Check-out: " + checkOutDate);
+        Log.d(TAG, "Guests: " + guests);
+        Log.d(TAG, "Total Price: " + totalPrice);
+        Log.d(TAG, "User ID: " + userId);
+        Log.d(TAG, "Token: " + (token != null ? "EXISTS (length=" + token.length() + ")" : "NULL ❌"));
+
+        // Validate critical data
+        if (userId <= 0) {
+            Log.e(TAG, "❌ ERROR: Invalid User ID!");
+            Toast.makeText(this, "Error: User session invalid. Please login again.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        if (token == null || token.isEmpty()) {
+            Log.e(TAG, "❌ ERROR: Token is NULL or EMPTY!");
+            Toast.makeText(this, "Error: Authentication token missing. Please login again.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        if (roomId <= 0) {
+            Log.e(TAG, "❌ ERROR: Invalid Room ID!");
+            Toast.makeText(this, "Error: Invalid room selection.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
     }
 
     private void displayBookingSummary() {
@@ -96,6 +138,8 @@ public class PaymentActivity extends AppCompatActivity {
         // Get selected payment method
         RadioButton selectedPaymentMethod = findViewById(selectedPaymentId);
         String paymentMethod = selectedPaymentMethod.getText().toString();
+
+        Log.d(TAG, "Payment method selected: " + paymentMethod);
 
         // Show confirmation dialog
         showPaymentConfirmation(paymentMethod);
@@ -123,14 +167,21 @@ public class PaymentActivity extends AppCompatActivity {
         btnPayNow.setEnabled(false);
         btnPayNow.setText("Processing...");
 
-        // Get user token
-        SharedPrefManager spm = new SharedPrefManager(this);
-        User user = spm.getUser();
-        String token = user.getToken();
+        Log.d(TAG, "=== SUBMITTING BOOKING TO API ===");
+        Log.d(TAG, "API URL: " + ApiUtils.BASE_URL + "bookings");
+        Log.d(TAG, "Token: " + (token != null ? "Present" : "NULL"));
+        Log.d(TAG, "User ID (user_id): " + userId);
+        Log.d(TAG, "Room ID (room_id): " + roomId);
+        Log.d(TAG, "Check-in Date: " + checkInDate);
+        Log.d(TAG, "Check-out Date: " + checkOutDate);
+        Log.d(TAG, "Guests: " + guests);
+        Log.d(TAG, "Total Price: " + totalPrice);
+        Log.d(TAG, "Payment Method (booking_method): " + paymentMethod);
+        Log.d(TAG, "Payment Status: paid");
 
-        // Create booking with payment
-        BookService bookService = ApiUtils.getBookService();
-        Call<ResponseBody> call = bookService.createBookingWithPayment(
+        // ✅ FIXED: Changed BookService to BookingService and getBookService to getBookingService
+        BookingService bookingService = ApiUtils.getBookingService();
+        Call<ResponseBody> call = bookingService.createBookingWithPayment(
                 token,
                 userId,
                 roomId,
@@ -148,17 +199,107 @@ public class PaymentActivity extends AppCompatActivity {
                 btnPayNow.setEnabled(true);
                 btnPayNow.setText("Pay Now");
 
+                Log.d(TAG, "=== API RESPONSE ===");
+                Log.d(TAG, "Response Code: " + response.code());
+                Log.d(TAG, "Response Message: " + response.message());
+                Log.d(TAG, "Response Headers: " + response.headers().toString());
+
                 if (response.code() == 200 || response.code() == 201) {
+                    Log.d(TAG, "✅ SUCCESS: Booking created successfully!");
+
+                    // Try to log response body
+                    try {
+                        if (response.body() != null) {
+                            String responseBody = response.body().string();
+                            Log.d(TAG, "Response Body: " + responseBody);
+                        } else {
+                            Log.d(TAG, "Response Body: NULL (but request was successful)");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading response body: " + e.getMessage());
+                    }
+
                     showPaymentSuccessDialog();
+
                 } else if (response.code() == 401) {
+                    Log.e(TAG, "❌ ERROR 401: Unauthorized - Token invalid or expired");
+
+                    // Try to read error body for more details
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error Body: " + errorBody);
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error reading error body: " + e.getMessage());
+                    }
+
                     Toast.makeText(PaymentActivity.this,
                             "Session expired. Please login again",
                             Toast.LENGTH_LONG).show();
                     finish();
-                } else {
+
+                } else if (response.code() == 400) {
+                    Log.e(TAG, "❌ ERROR 400: Bad Request - Invalid data sent to API");
+
+                    // Try to get error details
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error Body: " + errorBody);
+                            Toast.makeText(PaymentActivity.this,
+                                    "Payment failed: " + errorBody,
+                                    Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(PaymentActivity.this,
+                                    "Payment failed: Bad request. Please check your input.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body: " + e.getMessage());
+                        Toast.makeText(PaymentActivity.this,
+                                "Payment failed: Bad request",
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                } else if (response.code() == 500) {
+                    Log.e(TAG, " ERROR 500: Internal Server Error");
+
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error Body: " + errorBody);
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error reading error body: " + e.getMessage());
+                    }
+
                     Toast.makeText(PaymentActivity.this,
-                            "Payment failed: " + response.message(),
+                            "Server error. Please try again later.",
                             Toast.LENGTH_LONG).show();
+
+                } else {
+                    Log.e(TAG, " ERROR " + response.code() + ": " + response.message());
+
+                    // Try to get error details
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error Body: " + errorBody);
+                            Toast.makeText(PaymentActivity.this,
+                                    "Payment failed: " + errorBody,
+                                    Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(PaymentActivity.this,
+                                    "Payment failed: " + response.message(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body: " + e.getMessage());
+                        Toast.makeText(PaymentActivity.this,
+                                "Payment failed: " + response.message(),
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
             }
 
@@ -167,10 +308,25 @@ public class PaymentActivity extends AppCompatActivity {
                 btnPayNow.setEnabled(true);
                 btnPayNow.setText("Pay Now");
 
-                Toast.makeText(PaymentActivity.this,
-                        "Connection error: " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
-                Log.e("PaymentActivity", "Payment failed", t);
+                Log.e(TAG, "=== API CALL FAILED ===");
+                Log.e(TAG, "Error Type: " + t.getClass().getName());
+                Log.e(TAG, "Error Message: " + t.getMessage());
+                t.printStackTrace();
+
+                String errorMessage = "Connection error: ";
+
+                // Provide more specific error messages
+                if (t instanceof java.net.UnknownHostException) {
+                    errorMessage += "Cannot reach server. Check your internet connection.";
+                } else if (t instanceof java.net.SocketTimeoutException) {
+                    errorMessage += "Request timed out. Server not responding.";
+                } else if (t instanceof java.net.ConnectException) {
+                    errorMessage += "Cannot connect to server.";
+                } else {
+                    errorMessage += t.getMessage();
+                }
+
+                Toast.makeText(PaymentActivity.this, errorMessage, Toast.LENGTH_LONG).show();
             }
         });
     }

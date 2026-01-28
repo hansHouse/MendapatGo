@@ -5,11 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardElevation="4dp"
     app:cardCornerRadius="8dp"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?android:attr/selectableItemBackground">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,19 +14,54 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header with Booking ID and Status -->
+        <TextView
+            android:id="@+id/tvBookingId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Booking #1"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#333333"/>
+
+        <TextView
+            android:id="@+id/tvRoomInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Room 101 - Deluxe"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:textColor="#555555"/>
+
+        <TextView
+            android:id="@+id/tvCheckInDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Check-in: 2025-02-01"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:textColor="#666666"/>
+
+        <TextView
+            android:id="@+id/tvCheckOutDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Check-out: 2025-02-03"
+            android:textSize="14sp"
+            android:layout_marginTop="2dp"
+            android:textColor="#666666"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:layout_marginTop="8dp">
 
             <TextView
-                android:id="@+id/tvBookingId"
+                android:id="@+id/tvTotalPrice"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Booking #12345"
+                android:text="RM 300.00"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#2196F3"/>
@@ -41,81 +73,14 @@
                 android:text="Confirmed"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:textColor="#4CAF50"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:paddingTop="4dp"
                 android:paddingBottom="4dp"
-                android:background="@android:drawable/dialog_holo_light_frame"
-                android:textColor="#4CAF50"/>
+                android:background="@android:drawable/dialog_holo_light_frame"/>
 
         </LinearLayout>
-
-        <!-- Room Info -->
-        <TextView
-            android:id="@+id/tvRoomInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Room A-101 - Deluxe Suite"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#000000"
-            android:layout_marginBottom="8dp"/>
-
-        <!-- Check-in Date -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📅 "
-                android:textSize="14sp"/>
-
-            <TextView
-                android:id="@+id/tvCheckInDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Check-in: 2025-01-01"
-                android:textSize="14sp"
-                android:textColor="#666"/>
-
-        </LinearLayout>
-
-        <!-- Check-out Date -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📅 "
-                android:textSize="14sp"/>
-
-            <TextView
-                android:id="@+id/tvCheckOutDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Check-out: 2025-01-03"
-                android:textSize="14sp"
-                android:textColor="#666"/>
-
-        </LinearLayout>
-
-        <!-- Price -->
-        <TextView
-            android:id="@+id/tvTotalPrice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="RM 300.00"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#4CAF50"/>
 
     </LinearLayout>
 

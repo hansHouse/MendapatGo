@@ -1,3 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MendapatGo</string>
+
+    <!-- Room Management -->
+    <string name="manage_rooms">Manage Rooms</string>
+    <string name="add_new_room">Add New Room</string>
+    <string name="update_room">Update Room</string>
+    <string name="room_number">Room Number</string>
+    <string name="room_type">Room Type</string>
+    <string name="price">Price (RM)</string>
+    <string name="status">Status</string>
+    <string name="updated_by">Updated By</string>
+
+    <!-- Booking Management -->
+    <string name="manage_bookings">Manage Bookings</string>
+    <string name="update_booking">Update Booking</string>
+    <string name="booking_status">Booking Status</string>
+    <string name="payment_status">Payment Status</string>
+
+    <!-- Room Status Array -->
+    <string-array name="room_status_array">
+        <item>Available</item>
+        <item>Occupied</item>
+        <item>Maintenance</item>
+    </string-array>
+
+    <!-- Booking Status Array -->
+    <string-array name="booking_status_array">
+        <item>Pending</item>
+        <item>Confirmed</item>
+        <item>Cancelled</item>
+        <item>Checked-in</item>
+        <item>Checked-out</item>
+    </string-array>
+
+    <!-- Payment Status Array -->
+    <string-array name="payment_status_array">
+        <item>Pending</item>
+        <item>Paid</item>
+        <item>Refunded</item>
+    </string-array>
+
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="logout">Logout</string>
+
+    <!-- Dashboard -->
+    <string name="welcome">Welcome</string>
+    <string name="admin_dashboard">Admin Dashboard</string>
+    <string name="customer_dashboard">Customer Dashboard</string>
+
+    <!-- Buttons -->
+    <string name="btn_submit">Submit</string>
+    <string name="btn_update">Update</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_save">Save</string>
+
+    <!-- Messages -->
+    <string name="success">Success</string>
+    <string name="error">Error</string>
+    <string name="loading">Loading...</string>
+    <string name="no_data">No data available</string>
+
+    <!-- Room List -->
+    <string name="available_rooms">Available Rooms</string>
+    <string name="room_details">Room Details</string>
+    <string name="book_now">Book Now</string>
+
+    <!-- Booking -->
+    <string name="check_in_date">Check-in Date</string>
+    <string name="check_out_date">Check-out Date</string>
+    <string name="number_of_guests">Number of Guests</string>
+    <string name="total_price">Total Price</string>
+    <string name="booking_details">Booking Details</string>
+    <string name="my_bookings">My Bookings</string>
+
+    <!-- Context Menu -->
+    <string name="menu_update">Update</string>
+    <string name="menu_delete">Delete</string>
+    <string name="menu_view">View Details</string>
+
+    <!-- Validation Messages -->
+    <string name="error_field_required">This field is required</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_invalid_password">Password must be at least 6 characters</string>
+    <string name="error_passwords_not_match">Passwords do not match</string>
+
+    <!-- API Messages -->
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_server">Server error. Please try again later.</string>
+    <string name="error_unauthorized">Unauthorized access.</string>
+
 </resources>

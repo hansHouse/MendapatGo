@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UpdateRoomActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Room"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Room Number:"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/txtRoomNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g., 101"
+            android:inputType="text"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Room Type:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/txtRoomType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g., Deluxe, Standard, Suite"
+            android:inputType="text"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Price (RM per night):"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/txtPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g., 150.00"
+            android:inputType="numberDecimal"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:entries="@array/room_status_array"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Updated By:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/txtUpdatedBy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Admin username"
+            android:inputType="text"
+            android:padding="12dp"/>
+
+        <Button
+            android:id="@+id/btnUpdateRoom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Room"
+            android:onClick="updateRoom"
+            android:layout_marginTop="24dp"
+            android:padding="16dp"/>
+
+    </LinearLayout>
+
+</ScrollView>

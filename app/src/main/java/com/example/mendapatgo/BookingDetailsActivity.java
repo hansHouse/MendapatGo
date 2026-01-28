@@ -8,10 +8,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.mendapatgo.model.Booking;
 import com.example.mendapatgo.model.BookingResponse;
 import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
-import com.example.mendapatgo.remote.BookService;
+import com.example.mendapatgo.remote.BookingService;
 import com.example.mendapatgo.sharedpref.SharedPrefManager;
 
 import okhttp3.ResponseBody;
@@ -26,6 +27,7 @@ public class BookingDetailsActivity extends AppCompatActivity {
     private Button btnCancelBooking;
 
     private int bookingId;
+    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,13 +136,21 @@ public class BookingDetailsActivity extends AppCompatActivity {
         User user = spm.getUser();
         String token = user.getToken();
 
-        // Call API to cancel booking
-        BookService bookService = ApiUtils.getBookService();
-        Call<ResponseBody> call = bookService.cancelBooking(token, bookingId);
+        // ✅ FIXED: Changed BookService to BookingService
+        BookingService bookingService = ApiUtils.getBookingService();
 
-        call.enqueue(new Callback<ResponseBody>() {
+        // Call API to update booking status to cancelled
+        Call<Booking> call = bookingService.updateBookingStatus(
+                API_KEY,
+                bookingId,
+                "Cancelled",
+                "Pending"  // Keep payment status as is
+        );
+
+        call.enqueue(new Callback<Booking>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<Booking> call,
+                                   Response<Booking> response) {
                 if (response.isSuccessful()) {
                     showCancellationSuccess();
                 } else {
@@ -153,7 +163,7 @@ public class BookingDetailsActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<Booking> call, Throwable t) {
                 btnCancelBooking.setEnabled(true);
                 btnCancelBooking.setText("Cancel Booking");
                 Toast.makeText(BookingDetailsActivity.this,

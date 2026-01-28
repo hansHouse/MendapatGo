@@ -1,31 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/main"
-    android:background="#F5F5F5"
-    tools:context=".RoomListActivity">
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".ManageBookingsActivity">
 
     <TextView
-        android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Available Rooms"
+        android:text="Manage Bookings"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#2196F3"
-        android:padding="16dp"
         android:gravity="center"
-        android:background="@android:color/white"
-        android:elevation="4dp"/>
+        android:padding="16dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvRoomList"
+        android:id="@+id/rvBookingList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tvTitle"
-        android:padding="8dp"/>
+        android:scrollbars="vertical" />
 
-</RelativeLayout>
+</LinearLayout>

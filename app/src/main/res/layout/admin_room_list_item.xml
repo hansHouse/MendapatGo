@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/tvRoomNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Room 101"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvRoomType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Deluxe"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="RM 150.00"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#4CAF50"/>
+
+    </LinearLayout>
+
+</LinearLayout>

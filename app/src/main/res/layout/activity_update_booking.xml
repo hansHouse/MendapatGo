@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UpdateBookingActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Booking"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Booking ID:"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvBookingId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="16sp"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Room:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/tvRoomInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="16sp"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Check-in Date:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/tvCheckInDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="16sp"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Check-out Date:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/tvCheckOutDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="16sp"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Guests:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/tvGuests"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="16sp"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Booking Status:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerBookingStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:entries="@array/booking_status_array"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Payment Status:"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerPaymentStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:entries="@array/payment_status_array"/>
+
+        <Button
+            android:id="@+id/btnUpdateBooking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Booking"
+            android:onClick="updateBooking"
+            android:layout_marginTop="24dp"
+            android:padding="16dp"/>
+
+    </LinearLayout>
+
+</ScrollView>

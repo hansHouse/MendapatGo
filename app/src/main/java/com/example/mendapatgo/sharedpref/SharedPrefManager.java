@@ -3,17 +3,17 @@ package com.example.mendapatgo.sharedpref;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.example.mendapatgo.RoomListActivity;
 import com.example.mendapatgo.model.User;
 
 public class SharedPrefManager {
 
-    //the constants
+    // The constants
     private static final String SHARED_PREF_NAME = "hotelsharedpref";
     private static final String KEY_ID = "keyid";
     private static final String KEY_USERNAME = "keyusername";
     private static final String KEY_EMAIL = "keyemail";
     private static final String KEY_ROLE = "keyrole";
+    private static final String KEY_TOKEN = "keytoken";  // ✅ ADD TOKEN KEY
 
     private final Context mCtx;
 
@@ -21,14 +21,9 @@ public class SharedPrefManager {
         mCtx = context;
     }
 
-    public static void getInstance(RoomListActivity roomListActivity) {
-    }
-
-   
-
     /**
-     * method to let the user login
-     * this method will store the user data in shared preferences
+     * Method to let the user login
+     * This method will store the user data in shared preferences
      * @param user
      */
     public void storeUser(User user) {
@@ -38,21 +33,21 @@ public class SharedPrefManager {
         editor.putString(KEY_USERNAME, user.getUsername());
         editor.putString(KEY_EMAIL, user.getEmail());
         editor.putString(KEY_ROLE, user.getRole());
+        editor.putString(KEY_TOKEN, user.getToken());  // ✅ STORE TOKEN
         editor.apply();
     }
 
     /**
-     * this method will checker whether user is already logged in or not.
-     * return True if already logged in
+     * This method will check whether user is already logged in or not.
+     * Return True if already logged in
      */
-
     public boolean isLoggedIn() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_USERNAME, null) != null;
     }
 
     /**
-     * this method will give the information of logged in user, retrieved from SharedPreferences
+     * This method will give the information of logged in user, retrieved from SharedPreferences
      */
     public User getUser() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
@@ -62,13 +57,13 @@ public class SharedPrefManager {
         user.setUsername(sharedPreferences.getString(KEY_USERNAME, null));
         user.setEmail(sharedPreferences.getString(KEY_EMAIL, null));
         user.setRole(sharedPreferences.getString(KEY_ROLE, null));
+        user.setToken(sharedPreferences.getString(KEY_TOKEN, null));  // ✅ RETRIEVE TOKEN
 
         return user;
     }
 
-
     /**
-     * this method will logout the user. clear the SharedPreferences
+     * This method will logout the user. Clear the SharedPreferences
      */
     public void logout() {
         SharedPreferences sharedPreferences = mCtx.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
@@ -76,6 +71,4 @@ public class SharedPrefManager {
         editor.clear();
         editor.apply();
     }
-
-
 }

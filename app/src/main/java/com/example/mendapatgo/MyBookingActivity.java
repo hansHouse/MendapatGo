@@ -16,7 +16,7 @@ import com.example.mendapatgo.adapter.BookingAdapter;
 import com.example.mendapatgo.model.BookingResponse;
 import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
-import com.example.mendapatgo.remote.BookService;
+import com.example.mendapatgo.remote.BookingService;
 import com.example.mendapatgo.sharedpref.SharedPrefManager;
 
 import java.util.List;
@@ -69,8 +69,8 @@ public class MyBookingActivity extends AppCompatActivity {
         int userId = user.getId();
 
         // Call API to get bookings
-        BookService bookService = ApiUtils.getBookService();
-        Call<List<BookingResponse>> call = bookService.getUserBookings(token, userId);
+        BookingService bookService = ApiUtils.getBookingService();
+        Call<List<BookingResponse>> call = bookService.getUserBooking(token, userId);
 
         call.enqueue(new Callback<List<BookingResponse>>() {
             @Override
