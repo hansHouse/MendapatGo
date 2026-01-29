@@ -23,8 +23,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mendapatgo.adapter.AdminBookingAdapter;
 import com.example.mendapatgo.model.Booking;
 import com.example.mendapatgo.model.DeleteResponse;
+import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.BookingService;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
 
 import java.util.List;
 
@@ -37,9 +39,8 @@ public class ManageBookingsActivity extends AppCompatActivity {
     private BookingService bookingService;
     private RecyclerView rvBookingList;
     private AdminBookingAdapter adapter;
+    private String apiKey; // Dynamic API key from logged-in admin
 
-    // API key for accessing the booking service
-    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
     private static final String TAG = "ManageBookingsActivity";
 
     @Override
@@ -53,6 +54,13 @@ public class ManageBookingsActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Get API key from logged-in admin's session
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        apiKey = user.getToken(); // Use admin's token as API key
+
+        Log.d(TAG, "Using API Key from admin session: " + apiKey);
 
         // get reference to the RecyclerView
         rvBookingList = findViewById(R.id.rvBookingList);
@@ -73,10 +81,10 @@ public class ManageBookingsActivity extends AppCompatActivity {
 
         Log.d(TAG, "=== Fetching Bookings ===");
         Log.d(TAG, "API URL: " + ApiUtils.BASE_URL + "bookings");
-        Log.d(TAG, "API Key: " + API_KEY);
+        Log.d(TAG, "API Key: " + apiKey);
 
         // execute the call
-        bookingService.getAllBookings(API_KEY).enqueue(new Callback<List<Booking>>() {
+        bookingService.getAllBookings(apiKey).enqueue(new Callback<List<Booking>>() {
             @Override
             public void onResponse(Call<List<Booking>> call, Response<List<Booking>> response) {
                 Log.d(TAG, "=== Response Received ===");
@@ -86,7 +94,7 @@ public class ManageBookingsActivity extends AppCompatActivity {
                     // Get list of booking objects from response
                     List<Booking> bookings = response.body();
 
-                    Log.d(TAG, "✅ SUCCESS: Retrieved " + (bookings != null ? bookings.size() : 0) + " bookings");
+                    Log.d(TAG, "SUCCESS: Retrieved " + (bookings != null ? bookings.size() : 0) + " bookings");
 
                     // initialize adapter
                     adapter = new AdminBookingAdapter(getApplicationContext(), bookings);
@@ -104,12 +112,14 @@ public class ManageBookingsActivity extends AppCompatActivity {
                     rvBookingList.addItemDecoration(dividerItemDecoration);
 
                 } else if (response.code() == 401) {
-                    Log.e(TAG, "❌ ERROR 401: Unauthorized");
+                    // Unauthorized - invalid or expired token
+                    Log.e(TAG, "ERROR 401: Unauthorized");
                     Toast.makeText(getApplicationContext(),
-                            "Unauthorized: Invalid or missing API key",
+                            "Invalid session. Please login again",
                             Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 } else {
-                    Log.e(TAG, "❌ ERROR: " + response.code() + " - " + response.message());
+                    Log.e(TAG, " ERROR: " + response.code() + " - " + response.message());
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
                         Log.e(TAG, "Error Body: " + errorBody);
@@ -136,6 +146,17 @@ public class ManageBookingsActivity extends AppCompatActivity {
     }
 
     /**
+     * Clear session and redirect to login
+     */
+    public void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    /**
      * Delete booking record. Called by contextual menu "Delete"
      * @param selectedBooking - booking selected by admin
      */
@@ -147,7 +168,7 @@ public class ManageBookingsActivity extends AppCompatActivity {
 
         // prepare REST API call
         BookingService bookingService = ApiUtils.getBookingService();
-        Call<DeleteResponse> call = bookingService.deleteBooking(API_KEY, selectedBooking.getBookingId());
+        Call<DeleteResponse> call = bookingService.deleteBooking(apiKey, selectedBooking.getBookingId());
 
         // execute the call
         call.enqueue(new Callback<DeleteResponse>() {
@@ -162,8 +183,12 @@ public class ManageBookingsActivity extends AppCompatActivity {
                     // update data in list view
                     updateRecyclerView();
                 } else if (response.code() == 401) {
+                    // Unauthorized - invalid or expired token
                     Log.e(TAG, "ERROR 401: Unauthorized on delete");
-                    displayAlert("Unauthorized: Cannot delete booking. Check API key.");
+                    Toast.makeText(getApplicationContext(),
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 } else {
                     Log.e(TAG, "Delete failed: " + response.code() + " - " + response.message());
                     try {

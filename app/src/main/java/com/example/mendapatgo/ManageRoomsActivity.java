@@ -23,8 +23,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mendapatgo.adapter.AdminRoomAdapter;
 import com.example.mendapatgo.model.Room;
 import com.example.mendapatgo.model.DeleteResponse;
+import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.RoomService;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
 
 import java.util.List;
 
@@ -37,9 +39,9 @@ public class ManageRoomsActivity extends AppCompatActivity {
     private RoomService roomService;
     private RecyclerView rvRoomList;
     private AdminRoomAdapter adapter;
+    private String apiKey; // Dynamic API key from logged-in admin
 
-    // API key for accessing the room service
-    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
+    private static final String TAG = "ManageRoomsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,13 @@ public class ManageRoomsActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Get API key from logged-in admin's session
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        apiKey = user.getToken(); // Use admin's token as API key
+
+        Log.d(TAG, "Using API Key from admin session: " + apiKey);
 
         // get reference to the RecyclerView
         rvRoomList = findViewById(R.id.rvRoomList);
@@ -70,22 +79,22 @@ public class ManageRoomsActivity extends AppCompatActivity {
         // get room service instance
         roomService = ApiUtils.getRoomService();
 
-        Log.d("MyApp:", "=== Fetching Rooms ===");
-        Log.d("MyApp:", "API URL: " + ApiUtils.BASE_URL + "rooms");
-        Log.d("MyApp:", "API Key: " + API_KEY);
+        Log.d(TAG, "=== Fetching Rooms ===");
+        Log.d(TAG, "API URL: " + ApiUtils.BASE_URL + "rooms");
+        Log.d(TAG, "API Key: " + apiKey);
 
         // execute the call
-        roomService.getAllRooms(API_KEY).enqueue(new Callback<List<Room>>() {
+        roomService.getAllRooms(apiKey).enqueue(new Callback<List<Room>>() {
             @Override
             public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
-                Log.d("MyApp:", "=== Response Received ===");
-                Log.d("MyApp:", "Response Code: " + response.code());
+                Log.d(TAG, "=== Response Received ===");
+                Log.d(TAG, "Response Code: " + response.code());
 
                 if (response.code() == 200) {
                     // Get list of room objects from response
                     List<Room> rooms = response.body();
 
-                    Log.d("MyApp:", "SUCCESS: Retrieved " + (rooms != null ? rooms.size() : 0) + " rooms");
+                    Log.d(TAG, "SUCCESS: Retrieved " + (rooms != null ? rooms.size() : 0) + " rooms");
 
                     // initialize adapter
                     adapter = new AdminRoomAdapter(getApplicationContext(), rooms);
@@ -103,15 +112,17 @@ public class ManageRoomsActivity extends AppCompatActivity {
                     rvRoomList.addItemDecoration(dividerItemDecoration);
 
                 } else if (response.code() == 401) {
-                    Log.e("MyApp:", "ERROR 401: Unauthorized");
+                    // Unauthorized - invalid or expired token
+                    Log.e(TAG, "ERROR 401: Unauthorized");
                     Toast.makeText(getApplicationContext(),
-                            "Unauthorized: Invalid or missing API key",
+                            "Invalid session. Please login again",
                             Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 } else {
-                    Log.e("MyApp:", "ERROR: " + response.code() + " - " + response.message());
+                    Log.e(TAG, "ERROR: " + response.code() + " - " + response.message());
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
-                        Log.e("MyApp:", "Error Body: " + errorBody);
+                        Log.e(TAG, "Error Body: " + errorBody);
                         Toast.makeText(getApplicationContext(),
                                 "Error " + response.code() + ": " + response.message(),
                                 Toast.LENGTH_LONG).show();
@@ -125,8 +136,8 @@ public class ManageRoomsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Room>> call, Throwable t) {
-                Log.e("MyApp:", "=== API CALL FAILED ===");
-                Log.e("MyApp:", "Error: " + t.getMessage());
+                Log.e(TAG, "=== API CALL FAILED ===");
+                Log.e(TAG, "Error: " + t.getMessage());
                 Toast.makeText(getApplicationContext(),
                         "Error connecting to server: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
@@ -135,38 +146,53 @@ public class ManageRoomsActivity extends AppCompatActivity {
     }
 
     /**
+     * Clear session and redirect to login
+     */
+    public void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    /**
      * Delete room record. Called by contextual menu "Delete"
      * @param selectedRoom - room selected by admin
      */
     private void doDeleteRoom(Room selectedRoom) {
-        Log.d("MyApp:", "=== DELETING ROOM ===");
-        Log.d("MyApp:", "Room ID: " + selectedRoom.getRoomId());
-        Log.d("MyApp:", "Room Number: " + selectedRoom.getRoomNumber());
+        Log.d(TAG, "=== DELETING ROOM ===");
+        Log.d(TAG, "Room ID: " + selectedRoom.getRoomId());
+        Log.d(TAG, "Room Number: " + selectedRoom.getRoomNumber());
 
         // prepare REST API call
         RoomService roomService = ApiUtils.getRoomService();
-        Call<DeleteResponse> call = roomService.deleteRoom(API_KEY, selectedRoom.getRoomId());
+        Call<DeleteResponse> call = roomService.deleteRoom(apiKey, selectedRoom.getRoomId());
 
         // execute the call
         call.enqueue(new Callback<DeleteResponse>() {
             @Override
             public void onResponse(Call<DeleteResponse> call, Response<DeleteResponse> response) {
-                Log.d("MyApp:", "Delete Response Code: " + response.code());
+                Log.d(TAG, "Delete Response Code: " + response.code());
 
                 if (response.code() == 200) {
                     // 200 means OK
-                    Log.d("MyApp:", "Room deleted successfully");
+                    Log.d(TAG, "Room deleted successfully");
                     displayAlert("Room successfully deleted");
                     // update data in list view
                     updateRecyclerView();
                 } else if (response.code() == 401) {
-                    Log.e("MyApp:", "ERROR 401: Unauthorized on delete");
-                    displayAlert("Unauthorized: Cannot delete room. Check API key.");
+                    // Unauthorized - invalid or expired token
+                    Log.e(TAG, "ERROR 401: Unauthorized on delete");
+                    Toast.makeText(getApplicationContext(),
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 } else {
-                    Log.e("MyApp:", "Delete failed: " + response.code() + " - " + response.message());
+                    Log.e(TAG, "Delete failed: " + response.code() + " - " + response.message());
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
-                        Log.e("MyApp:", "Error Body: " + errorBody);
+                        Log.e(TAG, "Error Body: " + errorBody);
                         displayAlert("Error: " + response.message() + "\n" + errorBody);
                     } catch (Exception e) {
                         displayAlert("Error: " + response.message());
@@ -176,7 +202,7 @@ public class ManageRoomsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<DeleteResponse> call, Throwable t) {
-                Log.e("MyApp:", "Delete API call failed: " + t.getMessage());
+                Log.e(TAG, "Delete API call failed: " + t.getMessage());
                 displayAlert("Error: " + t.getMessage());
             }
         });
@@ -214,7 +240,7 @@ public class ManageRoomsActivity extends AppCompatActivity {
             return super.onContextItemSelected(item);
         }
 
-        Log.d("MyApp:", "Context menu item selected for room: " + selectedRoom.toString());
+        Log.d(TAG, "Context menu item selected for room: " + selectedRoom.toString());
 
         if (item.getItemId() == R.id.menu_delete) {
             // Show confirmation dialog before deleting
@@ -237,7 +263,7 @@ public class ManageRoomsActivity extends AppCompatActivity {
     }
 
     private void doUpdateRoom(Room selectedRoom) {
-        Log.d("MyApp:", "Updating room: " + selectedRoom.toString());
+        Log.d(TAG, "Updating room: " + selectedRoom.toString());
         // forward admin to UpdateRoomActivity, passing the selected room id
         Intent intent = new Intent(getApplicationContext(), UpdateRoomActivity.class);
         intent.putExtra("room_id", selectedRoom.getRoomId());

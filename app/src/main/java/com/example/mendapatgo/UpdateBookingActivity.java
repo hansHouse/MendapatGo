@@ -2,6 +2,7 @@ package com.example.mendapatgo;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,8 +17,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.mendapatgo.model.Booking;
+import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.BookingService;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,9 +40,7 @@ public class UpdateBookingActivity extends AppCompatActivity {
 
     private int bookingId;
     private Booking currentBooking;
-
-    // API key for accessing the booking service
-    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
+    private String apiKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,13 @@ public class UpdateBookingActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Get API key from logged-in admin's session
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        apiKey = user.getToken(); // Use admin's token as API key
+
+        Log.d(TAG, "Using API Key from admin session: " + apiKey);
 
         // get view objects references
         tvBookingId = findViewById(R.id.tvBookingId);
@@ -73,7 +81,7 @@ public class UpdateBookingActivity extends AppCompatActivity {
 
     private void fetchBookingDetails() {
         BookingService bookingService = ApiUtils.getBookingService();
-        Call<Booking> call = bookingService.getBooking(API_KEY, bookingId);
+        Call<Booking> call = bookingService.getBooking(apiKey, bookingId);
 
         call.enqueue(new Callback<Booking>() {
             @Override
@@ -114,8 +122,11 @@ public class UpdateBookingActivity extends AppCompatActivity {
                     }
                 }
                 else if (response.code() == 401) {
-                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
-                    finish();
+                    // Unauthorized - invalid or expired token
+                    Toast.makeText(getApplicationContext(),
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
@@ -134,6 +145,17 @@ public class UpdateBookingActivity extends AppCompatActivity {
     }
 
     /**
+     * Clear session and redirect to login
+     */
+    public void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    /**
      * Called when Update Booking button is clicked
      * @param v
      */
@@ -147,7 +169,7 @@ public class UpdateBookingActivity extends AppCompatActivity {
 
         // send request to update booking to the REST API
         BookingService bookingService = ApiUtils.getBookingService();
-        Call<Booking> call = bookingService.updateBookingStatus(API_KEY, bookingId, bookingStatus, paymentStatus);
+        Call<Booking> call = bookingService.updateBookingStatus(apiKey, bookingId, bookingStatus, paymentStatus);
 
         // execute
         call.enqueue(new Callback<Booking>() {
@@ -165,7 +187,11 @@ public class UpdateBookingActivity extends AppCompatActivity {
                     }
                 }
                 else if (response.code() == 401) {
-                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
+                    // Unauthorized - invalid or expired token
+                    Toast.makeText(getApplicationContext(),
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 }
                 else {
                     try {

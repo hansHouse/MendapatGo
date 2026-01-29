@@ -1,5 +1,6 @@
 package com.example.mendapatgo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,8 +16,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.mendapatgo.model.Room;
+import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.RoomService;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,9 +36,7 @@ public class NewRoomActivity extends AppCompatActivity {
     private EditText txtPrice;
     private Spinner spinnerStatus;
     private EditText txtUpdatedBy;
-
-    // API key for accessing the room service
-    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
+    private String apiKey; //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +50,30 @@ public class NewRoomActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Get API key from logged-in admin's session
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        apiKey = user.getToken(); // Use admin's token as API key
+
+        Log.d("MyApp:", "Using API Key from admin session: " + apiKey);
+
         // get view objects references
         txtRoomNumber = findViewById(R.id.txtRoomNumber);
         txtRoomType = findViewById(R.id.txtRoomType);
         txtPrice = findViewById(R.id.txtPrice);
         spinnerStatus = findViewById(R.id.spinnerStatus);
         txtUpdatedBy = findViewById(R.id.txtUpdatedBy);
+    }
+
+    /**
+     * Clear session and redirect to login
+     */
+    public void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 
     /**
@@ -91,7 +110,7 @@ public class NewRoomActivity extends AppCompatActivity {
 
         // send request to add new room to the REST API
         RoomService roomService = ApiUtils.getRoomService();
-        Call<Room> call = roomService.addRoom(API_KEY, roomNumber, roomType, price, status, updatedBy);
+        Call<Room> call = roomService.addRoom(apiKey, roomNumber, roomType, price, status, updatedBy);
 
         // execute
         call.enqueue(new Callback<Room>() {
@@ -110,6 +129,12 @@ public class NewRoomActivity extends AppCompatActivity {
 
                     // end this activity and go back to previous activity
                     finish();
+                } else if (response.code() == 401) {
+                    // Unauthorized - invalid or expired token
+                    Toast.makeText(getApplicationContext(),
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 } else {
                     Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
                     Log.e("MyApp: ", response.toString());

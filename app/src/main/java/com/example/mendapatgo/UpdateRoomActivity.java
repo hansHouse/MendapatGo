@@ -17,8 +17,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.mendapatgo.model.Room;
+import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.RoomService;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,11 +38,9 @@ public class UpdateRoomActivity extends AppCompatActivity {
     private EditText txtPrice;
     private Spinner spinnerStatus;
 
-    private Room room;
+    private Room room; // current room to be updated
     private int roomId;
-
-    // API key for accessing the room service
-    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
+    private String apiKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +53,13 @@ public class UpdateRoomActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Get API key from logged-in admin's session
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        apiKey = user.getToken(); // Use admin's token as API key
+
+        Log.d(TAG, "Using API Key from admin session: " + apiKey);
 
         // get view objects references
         txtRoomNumber = findViewById(R.id.txtRoomNumber);
@@ -67,10 +77,10 @@ public class UpdateRoomActivity extends AppCompatActivity {
         RoomService roomService = ApiUtils.getRoomService();
 
         // execute the API query
-        roomService.getRoom(API_KEY, roomId).enqueue(new Callback<Room>() {
+        roomService.getRoom(apiKey, roomId).enqueue(new Callback<Room>() {
             @Override
             public void onResponse(Call<Room> call, Response<Room> response) {
-                Log.d(TAG, "Response code: " + response.code());
+                Log.d(TAG, "Update Form Populate Response: " + response.raw().toString());
 
                 if (response.code() == 200) {
                     // server return success
@@ -78,6 +88,7 @@ public class UpdateRoomActivity extends AppCompatActivity {
                     room = response.body();
 
                     Log.d(TAG, "Room retrieved: " + room.toString());
+
 
                     // set values into forms
                     txtRoomNumber.setText(room.getRoomNumber());
@@ -95,8 +106,11 @@ public class UpdateRoomActivity extends AppCompatActivity {
                     }
                 }
                 else if (response.code() == 401) {
-                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
-                    finish();
+                    // Unauthorized - invalid or expired token
+                    Toast.makeText(getApplicationContext(),
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "Error: " + response.message(), Toast.LENGTH_LONG).show();
@@ -112,6 +126,17 @@ public class UpdateRoomActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    /**
+     * Clear session and redirect to login
+     */
+    public void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 
     /**
@@ -147,45 +172,49 @@ public class UpdateRoomActivity extends AppCompatActivity {
             return;
         }
 
+        // set updated_at to current date and time
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String updated_at = sdf.format(new Date());
+
+        Log.d(TAG, "Old Room info: " + room.toString());
+
         // update the room object with new data
         room.setRoomNumber(roomNumber);
         room.setRoomType(roomType);
         room.setPrice(price);
         room.setStatus(status);
 
-        Log.d(TAG, "Updating room: " + room.toString());
-        Log.d(TAG, "Sending: ID=" + room.getRoomId() + ", Number=" + roomNumber +
-                ", Type=" + roomType + ", Price=" + price + ", Status=" + status);
+        Log.d(TAG, "New Room info: " + room.toString());
+        Log.d(TAG, "Sending updated_at: " + updated_at);
 
         // send request to update the room record to the REST API
         RoomService roomService = ApiUtils.getRoomService();
-
         Call<Room> call = roomService.updateRoom(
-                API_KEY,
+                apiKey,
                 room.getRoomId(),
-                roomNumber,
-                roomType,
-                price,
-                status
+                room.getRoomNumber(),
+                room.getRoomType(),
+                room.getPrice(),
+                room.getStatus()
         );
 
         // execute
         call.enqueue(new Callback<Room>() {
             @Override
             public void onResponse(Call<Room> call, Response<Room> response) {
-                Log.d(TAG, "Update Response: " + response.code());
+                Log.d(TAG, "Update Request Response: " + response.raw().toString());
 
                 if (response.code() == 200) {
                     // server return success code for update request
                     Room updatedRoom = response.body();
-                    if (updatedRoom != null) {
-                        displayUpdateSuccess("Room " + updatedRoom.getRoomNumber() + " updated successfully.");
-                    } else {
-                        displayUpdateSuccess("Room updated successfully.");
-                    }
+                    displayUpdateSuccess("Room " + updatedRoom.getRoomNumber() + " updated successfully.");
                 }
                 else if (response.code() == 401) {
-                    Toast.makeText(getApplicationContext(), "Invalid API key", Toast.LENGTH_LONG).show();
+                    // Unauthorized - invalid or expired token
+                    Toast.makeText(getApplicationContext(),
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 }
                 else {
                     try {
@@ -206,7 +235,7 @@ public class UpdateRoomActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<Room> call, Throwable t) {
                 displayAlert("Error: " + t.getMessage());
-                Log.e(TAG, "Error: " + t.getMessage());
+                Log.d(TAG, "Error: " + t.getMessage());
             }
         });
     }

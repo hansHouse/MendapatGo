@@ -1,6 +1,7 @@
 package com.example.mendapatgo;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -17,8 +18,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mendapatgo.adapter.RoomAdapter;
 import com.example.mendapatgo.model.Room;
+import com.example.mendapatgo.model.User;
 import com.example.mendapatgo.remote.ApiUtils;
 import com.example.mendapatgo.remote.RoomService;
+import com.example.mendapatgo.sharedpref.SharedPrefManager;
 
 import java.util.List;
 
@@ -30,9 +33,7 @@ public class RoomListActivity extends AppCompatActivity {
     private RoomService roomService;
     private RecyclerView rvRoomList;
     private RoomAdapter adapter;
-
-    // API key for accessing the room service
-    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
+    private String apiKey; // Dynamic API key from logged-in user
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,13 @@ public class RoomListActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Get API key from logged-in user's session
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        apiKey = user.getToken(); // Use user's token as API key
+
+        Log.d("MyApp:", "Using API Key from user session: " + apiKey);
 
         // get reference to the RecyclerView roomList
         rvRoomList = findViewById(R.id.rvRoomList);
@@ -61,13 +69,13 @@ public class RoomListActivity extends AppCompatActivity {
 
     private void updateRecyclerView() {
         Log.d("MyApp:", "========== Starting API Call ==========");
-        Log.d("MyApp:", "API Key: " + API_KEY);
+        Log.d("MyApp:", "API Key: " + apiKey);
 
         // get room service instance
         roomService = ApiUtils.getRoomService();
 
-        //SENDING the API key!
-        roomService.getAllRooms(API_KEY).enqueue(new Callback<List<Room>>() {
+        // SENDING the API key!
+        roomService.getAllRooms(apiKey).enqueue(new Callback<List<Room>>() {
             @Override
             public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
                 // for debug purpose
@@ -80,7 +88,7 @@ public class RoomListActivity extends AppCompatActivity {
                     List<Room> rooms = response.body();
 
                     if (rooms != null && !rooms.isEmpty()) {
-                        Log.d("MyApp:", "Loaded " + rooms.size() + " rooms");
+                        Log.d("MyApp:", " Loaded " + rooms.size() + " rooms");
 
                         // initialize adapter
                         adapter = new RoomAdapter(getApplicationContext(), rooms);
@@ -108,11 +116,12 @@ public class RoomListActivity extends AppCompatActivity {
                     }
                 }
                 else if (response.code() == 401) {
-                    // invalid API key
+                    // Unauthorized - invalid or expired token
                     Log.e("MyApp:", "ERROR 401: Unauthorized - Invalid API key");
                     Toast.makeText(getApplicationContext(),
-                            "Invalid API key. Please check configuration",
+                            "Invalid session. Please login again",
                             Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 }
                 else {
                     Log.e("MyApp:", "ERROR " + response.code() + ": " + response.message());
@@ -132,6 +141,17 @@ public class RoomListActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    /**
+     * Clear session and redirect to login
+     */
+    public void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 
     /**

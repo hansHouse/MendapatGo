@@ -13,7 +13,7 @@ public class SharedPrefManager {
     private static final String KEY_USERNAME = "keyusername";
     private static final String KEY_EMAIL = "keyemail";
     private static final String KEY_ROLE = "keyrole";
-    private static final String KEY_TOKEN = "keytoken";  // ✅ ADD TOKEN KEY
+    private static final String KEY_TOKEN = "keytoken";
 
     private final Context mCtx;
 
@@ -33,7 +33,7 @@ public class SharedPrefManager {
         editor.putString(KEY_USERNAME, user.getUsername());
         editor.putString(KEY_EMAIL, user.getEmail());
         editor.putString(KEY_ROLE, user.getRole());
-        editor.putString(KEY_TOKEN, user.getToken());  // ✅ STORE TOKEN
+        editor.putString(KEY_TOKEN, user.getToken());
         editor.apply();
     }
 

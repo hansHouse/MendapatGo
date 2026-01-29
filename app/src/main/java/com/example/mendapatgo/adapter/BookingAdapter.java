@@ -40,7 +40,6 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
 
         // Set booking details
         holder.tvBookingId.setText("Booking #" + booking.getBooking_id());
-        holder.tvRoomInfo.setText("Room " + booking.getRoom_number() + " - " + booking.getRoom_type());
         holder.tvCheckInDate.setText("Check-in: " + booking.getCheck_in_date());
         holder.tvCheckOutDate.setText("Check-out: " + booking.getCheck_out_date());
         holder.tvTotalPrice.setText(String.format("RM %.2f", booking.getTotal_price()));

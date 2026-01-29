@@ -1,6 +1,8 @@
 package com.example.mendapatgo;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,17 +24,24 @@ import retrofit2.Response;
 
 public class BookingDetailsActivity extends AppCompatActivity {
 
+    private static final String TAG = "BookingDetailsActivity";
+
     private TextView tvBookingId, tvRoomInfo, tvCheckInDate, tvCheckOutDate,
             tvGuests, tvTotalPrice, tvBookingStatus, tvPaymentMethod, tvPaymentStatus;
     private Button btnCancelBooking;
 
     private int bookingId;
-    private static final String API_KEY = "83417780-aac0-43c8-8367-89821b949be1";
+    private String apiKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking_details);
+
+        // Get API key from logged-in user's session
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        User user = spm.getUser();
+        apiKey = user.getToken(); // Use user's token as API key
 
         // Initialize views
         tvBookingId = findViewById(R.id.tvBookingId);
@@ -64,11 +73,23 @@ public class BookingDetailsActivity extends AppCompatActivity {
 
         bookingId = booking.getBooking_id();
 
+        // Log the booking data to debug
+        Log.d(TAG, "Booking ID: " + booking.getBooking_id());
+        Log.d(TAG, "Room Number: " + booking.getRoom_number());
+        Log.d(TAG, "Room Type: " + booking.getRoom_type());
+        Log.d(TAG, "Room ID: " + booking.getRoom_id());
+
         // Display booking details
         tvBookingId.setText("Booking #" + booking.getBooking_id());
-        tvRoomInfo.setText("Room " + booking.getRoom_number() + " - " + booking.getRoom_type());
-        tvCheckInDate.setText(booking.getCheck_in_date());
-        tvCheckOutDate.setText(booking.getCheck_out_date());
+
+        // Handle room information with proper null checks
+        String roomInfo = buildRoomInfo(booking);
+        tvRoomInfo.setText(roomInfo);
+
+        tvCheckInDate.setText(booking.getCheck_in_date() != null ?
+                booking.getCheck_in_date() : "N/A");
+        tvCheckOutDate.setText(booking.getCheck_out_date() != null ?
+                booking.getCheck_out_date() : "N/A");
         tvGuests.setText(String.valueOf(booking.getGuests()));
         tvTotalPrice.setText(String.format("RM %.2f", booking.getTotal_price()));
         tvBookingStatus.setText(booking.getBooking_status() != null ?
@@ -89,6 +110,34 @@ public class BookingDetailsActivity extends AppCompatActivity {
             btnCancelBooking.setEnabled(false);
             btnCancelBooking.setText("Cannot Cancel");
         }
+    }
+
+    /**
+     * Build room information string with proper null handling
+     */
+    private String buildRoomInfo(BookingResponse booking) {
+        String roomNumber = booking.getRoom_number();
+        String roomType = booking.getRoom_type();
+        int roomId = booking.getRoom_id();
+
+        // If both room number and type are available
+        if (roomNumber != null && !roomNumber.isEmpty() &&
+                roomType != null && !roomType.isEmpty()) {
+            return "Room " + roomNumber + " - " + roomType;
+        }
+
+        // If only room number is available
+        if (roomNumber != null && !roomNumber.isEmpty()) {
+            return "Room " + roomNumber;
+        }
+
+        // If only room type is available
+        if (roomType != null && !roomType.isEmpty()) {
+            return roomType;
+        }
+
+        // Fallback to room ID
+        return "Room ID: " + roomId;
     }
 
     private void setStatusColor(String status) {
@@ -131,16 +180,11 @@ public class BookingDetailsActivity extends AppCompatActivity {
         btnCancelBooking.setEnabled(false);
         btnCancelBooking.setText("Cancelling...");
 
-        // Get user token
-        SharedPrefManager spm = new SharedPrefManager(this);
-        User user = spm.getUser();
-        String token = user.getToken();
-
         BookingService bookingService = ApiUtils.getBookingService();
 
         // Call API to update booking status to cancelled
         Call<Booking> call = bookingService.updateBookingStatus(
-                API_KEY,
+                apiKey,  // Use dynamic API key
                 bookingId,
                 "Cancelled",
                 "Pending"  // Keep payment status as is
@@ -152,6 +196,12 @@ public class BookingDetailsActivity extends AppCompatActivity {
                                    Response<Booking> response) {
                 if (response.isSuccessful()) {
                     showCancellationSuccess();
+                } else if (response.code() == 401) {
+                    // Unauthorized - invalid or expired token
+                    Toast.makeText(BookingDetailsActivity.this,
+                            "Invalid session. Please login again",
+                            Toast.LENGTH_LONG).show();
+                    clearSessionAndRedirect();
                 } else {
                     btnCancelBooking.setEnabled(true);
                     btnCancelBooking.setText("Cancel Booking");
@@ -170,6 +220,17 @@ public class BookingDetailsActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    /**
+     * Clear session and redirect to login
+     */
+    public void clearSessionAndRedirect() {
+        SharedPrefManager spm = new SharedPrefManager(getApplicationContext());
+        spm.logout();
+        finish();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 
     private void showCancellationSuccess() {
